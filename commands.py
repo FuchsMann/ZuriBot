@@ -1,0 +1,42 @@
+from discord import app_commands, Client, Object, Interaction, User, File, VoiceChannel
+import json
+from io import BytesIO
+from data_manager import DataManager
+
+
+class CommandManager:
+    def __init__(self, client: Client):
+        self.tree = app_commands.CommandTree(client)
+        self.registerCommands()
+
+    def registerCommands(self):
+
+        @self.tree.command(name="print_messages", description="Shows all current custom messages for this guild", guild=Object(id=359108643599417344))
+        async def print_messages(interaction: Interaction):
+            outBytes = BytesIO()
+            outBytes.write(json.dumps(
+                {"messages": []}, indent=2).encode('UTF-8'))
+            outBytes.seek(0)
+            file = File(fp=outBytes, filename="messages.json")
+            await interaction.response.send_message(file=file)
+
+        @self.tree.command(name="join_message", description="A custom message for Zuri to say for a certain member", guild=Object(id=359108643599417344))
+        async def join_message(interaction: Interaction, user_mention: User, custom_message: str):
+            DataManager.addGuildCustomMessage(
+                interaction.guild_id, user_mention.id, custom_message)
+            await interaction.response.send_message(f'Message {custom_message} was added for {user_mention.name}')
+
+        @self.tree.command(name="watch_channel", description="Adds/removes a channel from Zuri's watchlist", guild=Object(id=359108643599417344))
+        async def join_message(interaction: Interaction, voice_channel: VoiceChannel):
+            action: str = DataManager.toggleWatchedChannel(
+                interaction.guild_id, voice_channel.id, voice_channel.name)
+            await interaction.response.send_message(f'Channel {voice_channel.name} was {action} to the watchlist')
+
+        @self.tree.command(name="print_channels", description="Show Zuri's channel watchlist", guild=Object(id=359108643599417344))
+        async def print_channels(interaction: Interaction):
+            outBytes = BytesIO()
+            outBytes.write(json.dumps(DataManager.loadWatchedChannels(
+                interaction.guild_id).toDict(), indent=2).encode('UTF-8'))
+            outBytes.seek(0)
+            file = File(fp=outBytes, filename="channels.json")
+            await interaction.response.send_message(file=file)

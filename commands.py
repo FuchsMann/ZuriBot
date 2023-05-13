@@ -14,8 +14,8 @@ class CommandManager:
         @self.tree.command(name="print_messages", description="Shows all current custom messages for this guild")
         async def print_messages(interaction: Interaction):
             outBytes = BytesIO()
-            outBytes.write(json.dumps(
-                {"messages": []}, indent=2).encode('UTF-8'))
+            outBytes.write(json.dumps(DataManager.loadGuildCustomMessages(
+                interaction.guild_id).toDict(), indent=2).encode('UTF-8'))
             outBytes.seek(0)
             file = File(fp=outBytes, filename="messages.json")
             await interaction.response.send_message(file=file)

@@ -27,7 +27,6 @@ class WatchedChannelList(list[WatchedChannel]):
         for channel in self:
             if channel.channel_id == channel_id:
                 self.remove(channel)
-                return
 
     def toDict(self) -> dict:
         return {

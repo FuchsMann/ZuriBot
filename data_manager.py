@@ -23,6 +23,7 @@ class DataManager:
 
     def addGuildCustomMessage(guild_id: int, user_id: int, message: str) -> None:
         messages = DataManager.loadGuildCustomMessages(guild_id)
+        messages.removeByID(user_id)
         messages.append(CustomMessage(user_id, message))
         DataManager.saveGuildCustomMessages(guild_id, messages)
 

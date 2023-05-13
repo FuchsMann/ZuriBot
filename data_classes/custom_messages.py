@@ -18,19 +18,18 @@ class CustomMessageList(list[CustomMessage]):
 
     def __init__(self) -> None:
         super().__init__()
-        
+
     def contains(self, user_id: int) -> bool:
         for message in self:
             if message.user_id == user_id:
                 return True
         return False
-    
+
     def removeByID(self, user_id: int) -> None:
         for message in self:
             if message.user_id == user_id:
                 self.remove(message)
-                return
-    
+
     def getByID(self, user_id: int) -> CustomMessage:
         for message in self:
             if message.user_id == user_id:

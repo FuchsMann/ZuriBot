@@ -22,6 +22,9 @@ class CommandManager:
 
         @self.tree.command(name="join_message", description="A custom message for Zuri to say for a certain member")
         async def join_message(interaction: Interaction, user_mention: User, custom_message: str):
+            if '@' in custom_message:
+                await interaction.response.send_message(f'Custom message cannot contain mentions')
+                return
             DataManager.addGuildCustomMessage(
                 interaction.guild_id, user_mention.id, custom_message)
             await interaction.response.send_message(f'Message "{custom_message}" was added for {user_mention.name}')

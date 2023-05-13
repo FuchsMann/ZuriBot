@@ -26,6 +26,11 @@ class DataManager:
         messages.append(CustomMessage(user_id, message))
         DataManager.saveGuildCustomMessages(guild_id, messages)
 
+    def removeGuildCustomMessage(guild_id: int, user_id: int) -> None:
+        messages = DataManager.loadGuildCustomMessages(guild_id)
+        messages.removeByID(user_id)
+        DataManager.saveGuildCustomMessages(guild_id, messages)
+
     def ensureGuildCustomMessagesFileExists(guild_id: int) -> None:
         path = Path(BASEPATH, str(guild_id) + MESSAGES_BASENAME)
         if not path.exists():

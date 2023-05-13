@@ -3,6 +3,7 @@ from discord import VoiceState, Member
 from auth import Auth
 from intent_builder import IntentBuilder
 from commands import CommandManager
+from data_manager import DataManager
 
 
 class ZuriBot(discord.Client):
@@ -15,13 +16,23 @@ class ZuriBot(discord.Client):
         super().run(self.authData.token)
 
     async def on_ready(self) -> None:
-        await self.commandManager.tree.sync(guild=discord.Object(id=359108643599417344))
+        await self.commandManager.tree.sync()
         print(f'Logged on as {self.user}!')
 
     async def on_voice_state_update(self, member: Member, before: VoiceState, after: VoiceState) -> None:
-        # print(f'Voice state update from {member}: {before} -> {after}')
+        watchedChannels = DataManager.loadWatchedChannels(
+            member.guild.id)
+        customMessages = DataManager.loadGuildCustomMessages(
+            member.guild.id)
         if before.channel is None and after.channel is not None:
-            print(f'{member} joined {after.channel}')
+            if watchedChannels.contains(after.channel.id):
+                if customMessages.contains(member.id):
+                    await after.channel.send(customMessages.getByID(member.id).message)
+                else:
+                    await after.channel.send(f'Hello {member.name}! Welcome to {after.channel.name}!')
+        elif before.channel is not None and after.channel is None:
+            if watchedChannels.contains(before.channel.id):
+                await before.channel.send(f'Goodbye {member.name}! I hope you had a good time!')
 
 
 client = ZuriBot()

@@ -59,9 +59,7 @@ class CommandManager:
                         outfile = SoyFunctions.soy(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)
-                            return
-                        await interaction.response.send_message('Error')
-                        return
+                return
             await interaction.response.send_message('No images detected')
             
         @self.tree.context_menu(name="Soyphone")
@@ -72,7 +70,5 @@ class CommandManager:
                         outfile = SoyFunctions.soyphone(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)
-                            return
-                        await interaction.response.send_message('Error')
-                        return
+                return
             await interaction.response.send_message('No images detected')

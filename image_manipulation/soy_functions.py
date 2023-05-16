@@ -14,6 +14,7 @@ class SoyFunctions:
             overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage
         )
         byteArr = BytesIO()
+        inImage.convert('RGB')
         inImage.save(byteArr, 'JPEG')
         byteArr.seek(0)
         return File(byteArr, filename='Soy.jpg')

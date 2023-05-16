@@ -50,6 +50,10 @@ class CommandManager:
             file = File(fp=outBytes, filename="channels.json")
             await interaction.response.send_message(file=file)
             
-        @self.tree.context_menu(name="Context m. tst")
-        async def ctx_menu_tst(interaction: Interaction, message: Message):
-            await interaction.response.send_message(f'ctx. men. test - loopback: {message.content}')
+        @self.tree.context_menu(name="Soy")
+        async def soy(interaction: Interaction, message: Message):
+            await interaction.response.send_message('Stub')
+            
+        @self.tree.context_menu(name="Soyphone")
+        async def soyphone(interaction: Interaction, message: Message):
+            await interaction.response.send_message('Stub')

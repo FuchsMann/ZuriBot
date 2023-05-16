@@ -2,6 +2,7 @@ from discord import app_commands, Client, Object, Interaction, User, File, Voice
 import json
 from io import BytesIO
 from data_manager import DataManager
+from image_manipulation.soy_functions import SoyFunctions
 
 
 class CommandManager:
@@ -52,8 +53,26 @@ class CommandManager:
             
         @self.tree.context_menu(name="Soy")
         async def soy(interaction: Interaction, message: Message):
-            await interaction.response.send_message('Stub')
+            if len(message.attachments) != 0:
+                for attachment in message.attachments:
+                    if 'image' in attachment.content_type:
+                        outfile = SoyFunctions.soy(attachment.url)
+                        if outfile is not None:
+                            await interaction.response.send_message(file=outfile)
+                            return
+                        await interaction.response.send_message('Error')
+                        return
+            await interaction.response.send_message('No images detected')
             
         @self.tree.context_menu(name="Soyphone")
         async def soyphone(interaction: Interaction, message: Message):
-            await interaction.response.send_message('Stub')
+            if len(message.attachments) != 0:
+                for attachment in message.attachments:
+                    if 'image' in attachment.content_type:
+                        outfile = SoyFunctions.soyphone(attachment.url)
+                        if outfile is not None:
+                            await interaction.response.send_message(file=outfile)
+                            return
+                        await interaction.response.send_message('Error')
+                        return
+            await interaction.response.send_message('No images detected')

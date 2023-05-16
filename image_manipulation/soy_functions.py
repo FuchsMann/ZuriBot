@@ -14,7 +14,7 @@ class SoyFunctions:
             overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage
         )
         byteArr = BytesIO()
-        inImage.save(byteArr, 'Soy.jpg')
+        inImage.save(byteArr, 'JPEG')
         byteArr.seek(0)
         return File(byteArr, filename='Soy.jpg')
 
@@ -39,6 +39,6 @@ class SoyFunctions:
         )
         rootImage = rootImage.convert('RGB')
         byteArr = BytesIO()
-        rootImage.save(byteArr, 'Soyphone.jpg')
+        rootImage.save(byteArr, 'JPEG')
         byteArr.seek(0)
         return File(byteArr, filename='Soyphone.jpg')

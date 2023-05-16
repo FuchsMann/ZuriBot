@@ -1,4 +1,4 @@
-from discord import app_commands, Client, Object, Interaction, User, File, VoiceChannel
+from discord import app_commands, Client, Object, Interaction, User, File, VoiceChannel, Message
 import json
 from io import BytesIO
 from data_manager import DataManager
@@ -49,3 +49,7 @@ class CommandManager:
             outBytes.seek(0)
             file = File(fp=outBytes, filename="channels.json")
             await interaction.response.send_message(file=file)
+            
+        @self.tree.context_menu(name="Context m. tst", guilds=[Object(id=944570905084968980)])
+        async def ctx_menu_tst(interaction: Interaction, message: Message):
+            await interaction.response.send_message(f'ctx. men. test - loopback: {message.content}')

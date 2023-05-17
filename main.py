@@ -24,15 +24,18 @@ class ZuriBot(discord.Client):
             member.guild.id)
         customMessages = DataManager.loadGuildCustomMessages(
             member.guild.id)
+
+        memberName = member.nick if member.nick is not None else member.name
+
         if before.channel is None and after.channel is not None:
             if watchedChannels.contains(after.channel.id):
                 if customMessages.contains(member.id):
-                    await after.channel.send(customMessages.getByID(member.id).message)
+                    await after.channel.send(customMessages.getByID(member.id).message + f'\n({memberName} joined)')
                 else:
-                    await after.channel.send(f'Hello **{member.name}**! Welcome to {after.channel.name}!')
+                    await after.channel.send(f'Hello **{memberName}**! Welcome to {after.channel.name}!')
         elif before.channel is not None and after.channel is None:
             if watchedChannels.contains(before.channel.id):
-                await before.channel.send(f'Goodbye **{member.name}**! I hope you had a good time!')
+                await before.channel.send(f'Goodbye **{memberName}**! I hope you had a good time!')
 
 
 client = ZuriBot()

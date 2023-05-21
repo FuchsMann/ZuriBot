@@ -1,3 +1,4 @@
+from typing import Optional
 from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member
 import json
 from io import BytesIO
@@ -54,9 +55,9 @@ class CommandManager:
             await interaction.response.send_message(file=file)
 
         @self.tree.command(name="subscribe", description="Adds/removes a channel from your notifications, optional argument for specific artists")
-        async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel, artists: list[Member] = []):
-            await interaction.response.send_message(f'Stubbed command; arg feedback: {[artist.id for artist in artists]}')
-            
+        async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel, artist: Optional[Member] = None):
+            await interaction.response.send_message(f'Stubbed command; arg feedback: {voice_channel}, {artist}')
+
         @self.tree.command(name="print_subscribed_channels", description="Shows all subscribed channels for your account.")
         async def watch_channel(interaction: Interaction):
             await interaction.response.send_message('Stubbed command')

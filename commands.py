@@ -1,4 +1,4 @@
-from discord import app_commands, Client, Object, Interaction, User, File, VoiceChannel, Message
+from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member
 import json
 from io import BytesIO
 from data_manager import DataManager
@@ -11,6 +11,8 @@ class CommandManager:
         self.registerCommands()
 
     def registerCommands(self):
+
+        # SLASH COMMANDS
 
         @self.tree.command(name="print_messages", description="Shows all current custom messages for this guild")
         async def print_messages(interaction: Interaction):
@@ -50,7 +52,17 @@ class CommandManager:
             outBytes.seek(0)
             file = File(fp=outBytes, filename="channels.json")
             await interaction.response.send_message(file=file)
+
+        @self.tree.command(name="subscribe", description="Adds/removes a channel from your notifications, optional argument for specific artists")
+        async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel, artists: list[Member] = []):
+            await interaction.response.send_message(f'Stubbed command; arg feedback: {[artist.id for artist in artists]}')
             
+        @self.tree.command(name="print_subscribed_channels", description="Shows all subscribed channels for your account.")
+        async def watch_channel(interaction: Interaction):
+            await interaction.response.send_message('Stubbed command')
+
+        # CONTEXT MENU STUFF
+
         @self.tree.context_menu(name="Soy")
         async def soy(interaction: Interaction, message: Message):
             if len(message.attachments) != 0:
@@ -61,7 +73,7 @@ class CommandManager:
                             await interaction.response.send_message(file=outfile)
                 return
             await interaction.response.send_message('No images detected')
-            
+
         @self.tree.context_menu(name="Soyphone")
         async def soyphone(interaction: Interaction, message: Message):
             if len(message.attachments) != 0:

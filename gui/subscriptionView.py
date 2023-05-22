@@ -26,6 +26,7 @@ class SubscriptionView(View):
                 [user.id for user in self.userSelectHandle.values] if len(self.userSelectHandle.values) != 0 else [])
             us = DataManager.loadUserSettings(interaction.user.id)
             us.addOrRemoveSubscriptionForChannel(subvals[0], subvals[1])
+            DataManager.saveUserSettings(interaction.user.id, us)
             await interaction.response.send_message(f'Sub added.', ephemeral=True)
             self.value = True
             self.clear_items()

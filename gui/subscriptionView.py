@@ -1,7 +1,7 @@
 from discord.ui import View, UserSelect, ChannelSelect, Button, button
 from discord import Interaction, ButtonStyle
 
-class SubscriptionView(View, title='Subscriptions'):
+class SubscriptionView(View):
     
     channelSelect = ChannelSelect(placeholder='Select a channel', min_values=1, max_values=1, row=0)
     

@@ -7,7 +7,7 @@ class SubscriptionView(View):
         super().__init__()
         self.value = False
         
-        self.channelSelectHandle = ChannelSelect(placeholder='Select a channel', min_values=0, max_values=25, row=1, channel_types=[ChannelType.voice])
+        self.channelSelectHandle = ChannelSelect(placeholder='Select a channel', min_values=0, max_values=25, row=0, channel_types=[ChannelType.voice])
         self.userSelectHandle = UserSelect(placeholder='Select a user', min_values=0, max_values=25, row=1)
         
         for item in [self.channelSelectHandle, self.userSelectHandle]:

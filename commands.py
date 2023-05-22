@@ -4,6 +4,7 @@ import json
 from io import BytesIO
 from data_manager import DataManager
 from image_manipulation.soy_functions import SoyFunctions
+from gui.subscriptionModal import SubscriptionModal
 
 
 class CommandManager:
@@ -60,7 +61,8 @@ class CommandManager:
 
         @self.tree.command(name="print_subscribed_channels", description="Shows all subscribed channels for your account.")
         async def watch_channel(interaction: Interaction):
-            await interaction.response.send_message('Stubbed command')
+            #await interaction.response.send_message('Stubbed command')
+            await interaction.response.send_modal(SubscriptionModal())
 
         # CONTEXT MENU STUFF
 

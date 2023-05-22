@@ -1,6 +1,5 @@
-from typing import Optional
 from discord.ui import View, UserSelect, ChannelSelect, Button, button
-from discord import Interaction, ButtonStyle, ChannelType, User, Channel
+from discord import Interaction, ButtonStyle, ChannelType
 
 class SubscriptionView(View):
     def __init__(self):

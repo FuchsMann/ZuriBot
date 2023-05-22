@@ -1,5 +1,7 @@
 from discord.ui import View, UserSelect, ChannelSelect, Button, button
 from discord import Interaction, ButtonStyle, ChannelType
+from ..data_manager import DataManager
+from ..data_classes.channel_subscription import ChannelSubscription
 
 class SubscriptionView(View):
     def __init__(self):
@@ -18,12 +20,21 @@ class SubscriptionView(View):
     
     @button(label='Confirm', style=ButtonStyle.green, row=2)
     async def confirm(self, interaction: Interaction, button: Button):
-        await interaction.response.send_message(f'{[user.name for user in self.userSelectHandle.values]}; {self.channelSelectHandle.values[0].name}', ephemeral=True)
-        self.value = True
-        self.stop()
+        if len(self.userSelectHandle.values) != 0:
+            subvals = (self.channelSelectHandle.values[0].id,
+                [user.id for user in self.userSelectHandle.values] if len(self.userSelectHandle.values) != 0 else [])
+            us = DataManager.loadUserSettings(interaction.user.id)
+            us.addOrRemoveSubscriptionForChannel(subvals[0], subvals[1])
+            await interaction.response.send_message(f'Sub added.', ephemeral=True)
+            self.value = True
+            self.clear_items()
+            self.stop()
+        else:
+            await interaction.response.send_message(f'You must select a channel.', ephemeral=True)
         
     @button(label='Cancel', style=ButtonStyle.red, row=2)
     async def cancel(self, interaction: Interaction, button: Button):
         await interaction.response.send_message('Aborted.', ephemeral=True)
         self.value = True
+        self.clear_items()
         self.stop()

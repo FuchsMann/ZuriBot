@@ -57,12 +57,27 @@ class CommandManager:
 
         @self.tree.command(name="subscribe", description="Adds/removes a channel from your notifications, optional argument for specific artists")
         async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel, artist: Optional[Member] = None):
-            await interaction.response.send_message(f'Stubbed command; arg feedback: {voice_channel}, {artist}')
+            await interaction.response.send_message('Select a channel and users to subscribe to. Select no user to get notifications if anyone starts a stream in the channel.', view=SubscriptionView(), ephemeral=True)
 
         @self.tree.command(name="print_subscribed_channels", description="Shows all subscribed channels for your account.")
         async def watch_channel(interaction: Interaction):
-            #await interaction.response.send_message('Stubbed command')
-            await interaction.response.send_message('Currently not functional.', view=SubscriptionView(), ephemeral=True)
+            await interaction.response.send_message('Stubbed command')
+            DataManager.loadUserSettings(interaction.user.id)
+            outString = ''
+            members = interaction.guild.members
+            for channel in DataManager.loadUserSettings(interaction.user.id).channelSubscriptions:
+                if channel.guildID == interaction.guild_id:
+                    channelString = json.dumps(
+                        {
+                            'Channel': channel.channel_name,
+                            'Subbed users': [
+                                (member.nick if member.nick != '' else member.name) for member in members if member.id in channel.userIDs
+                                ]
+                        }
+                        , indent=2)
+                    outString += channelString + '\n'
+            await interaction.response.send_message(outString if outString != '' else 'No subscriptions found', ephemeral=True)
+            
 
         # CONTEXT MENU STUFF
 

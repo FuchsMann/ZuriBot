@@ -2,7 +2,7 @@ import json
 
 
 class WatchedChannel:
-    def __init__(self, channel_id, channel_name):
+    def __init__(self, channel_id: int, channel_name: str):
         self.channel_id = channel_id
         self.channel_name = channel_name
 

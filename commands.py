@@ -1,5 +1,4 @@
-from typing import Optional
-from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member
+from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message
 import json
 from io import BytesIO
 from data_manager import DataManager
@@ -55,8 +54,8 @@ class CommandManager:
             file = File(fp=outBytes, filename="channels.json")
             await interaction.response.send_message(file=file)
 
-        @self.tree.command(name="subscribe", description="Adds/removes a channel from your notifications, optional argument for specific artists")
-        async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel, artist: Optional[Member] = None):
+        @self.tree.command(name="subscribe", description="Subscription GUI")
+        async def watch_channel(interaction: Interaction):
             await interaction.response.send_message('Select a channel and users to subscribe to. Select no user to get notifications if anyone starts a stream in the channel.', view=SubscriptionView(), ephemeral=True)
 
         @self.tree.command(name="print_subscribed_channels", description="Shows all subscribed channels for your account.")

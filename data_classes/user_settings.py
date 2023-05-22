@@ -19,11 +19,11 @@ class UserSettings:
         return subscription
     return None
   
-  def addOrRemoveSubscriptionForChannel(self, channelID: int, userIDs: list[int]) -> None:
+  def addOrRemoveSubscriptionForChannel(self, guildID: int, channelID: int, userIDs: list[int]) -> None:
     subscription = self.getSubscriptionForChannel(channelID)
     if subscription is not None:
       self.channelSubscriptions.remove(subscription)
-    self.channelSubscriptions.append(ChannelSubscription(channelID, userIDs))
+    self.channelSubscriptions.append(ChannelSubscription(guildID, channelID, userIDs))
   
   def toJSON(self, path: Path) -> None:
     with path.open('w') as file:

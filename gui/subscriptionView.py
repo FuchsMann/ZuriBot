@@ -1,6 +1,6 @@
 from typing import Optional
 from discord.ui import View, UserSelect, ChannelSelect, Button, button
-from discord import Interaction, ButtonStyle, ChannelType
+from discord import Interaction, ButtonStyle, ChannelType, User, Channel
 
 class SubscriptionView(View):
     def __init__(self):
@@ -11,7 +11,11 @@ class SubscriptionView(View):
         self.userSelectHandle = UserSelect(placeholder='Select a user', min_values=0, max_values=25, row=1)
         
         for item in [self.channelSelectHandle, self.userSelectHandle]:
+            item.callback = self.selectDefer
             self.add_item(item)
+    
+    def selectDefer(self, interaction: Interaction):
+        interaction.response.defer()
     
     @button(label='Confirm', style=ButtonStyle.green, row=2)
     async def confirm(self, interaction: Interaction, button: Button):

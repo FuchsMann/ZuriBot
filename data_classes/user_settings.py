@@ -27,7 +27,6 @@ class UserSettings:
   
   def toJSON(self, path: Path) -> None:
     with path.open('w') as file:
-      print(self.toDict())
       json.dump(self.toDict(), file, indent=4)
       
   def fromJSON(self, path: Path) -> None:

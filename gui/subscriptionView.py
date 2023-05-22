@@ -1,7 +1,8 @@
 from discord.ui import View, UserSelect, ChannelSelect, Button, button
 from discord import Interaction, ButtonStyle, ChannelType
+import sys
+sys.path.append("..")
 from ..data_manager import DataManager
-from ..data_classes.channel_subscription import ChannelSubscription
 
 class SubscriptionView(View):
     def __init__(self):

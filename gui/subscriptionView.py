@@ -15,7 +15,7 @@ class SubscriptionView(View):
     
     @button(label='Confirm', style=ButtonStyle.green, row=2)
     async def confirm(self, interaction: Interaction, button: Button):
-        await interaction.response.send_message('Confirmed.', ephemeral=True)
+        await interaction.response.send_message(f'{self.userSelectHandle.values}; {self.channelSelectHandle.values}', ephemeral=True)
         self.value = True
         self.stop()
         

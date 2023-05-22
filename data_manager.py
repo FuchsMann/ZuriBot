@@ -1,10 +1,13 @@
 from pathlib import Path
 from data_classes.custom_messages import CustomMessage, CustomMessageList
 from data_classes.watched_channels import WatchedChannel, WatchedChannelList
+from data_classes.user_settings import UserSettings
 
 BASEPATH = Path('data')
+USERPATH = Path(BASEPATH, 'users')
 MESSAGES_BASENAME = "_messages.json"
 WATCHLIST_BASENAME = "_watchlist.json"
+USERSETTINGS_BASENAME = "_settings.json"
 
 
 class DataManager:
@@ -64,3 +67,20 @@ class DataManager:
         path = Path(BASEPATH, str(guild_id) + WATCHLIST_BASENAME)
         if not path.exists():
             DataManager.saveWatchedChannels(guild_id, WatchedChannelList())
+            
+    # User Settings
+    def loadUserSettings(user_id: int) -> UserSettings:
+        DataManager.ensureUserSettingsFileExists(user_id)
+        path = Path(USERPATH, str(user_id) + USERSETTINGS_BASENAME)
+        settings = UserSettings(user_id)
+        settings.fromJSON(path)
+        return settings
+    
+    def saveUserSettings(user_id: int, settings: UserSettings) -> None:
+        path = Path(USERPATH, str(user_id) + USERSETTINGS_BASENAME)
+        settings.toJSON(path)
+        
+    def ensureUserSettingsFileExists(user_id: int) -> None:
+        path = Path(USERPATH, str(user_id) + USERSETTINGS_BASENAME)
+        if not path.exists():
+            DataManager.saveUserSettings(user_id, UserSettings(user_id))

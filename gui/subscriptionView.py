@@ -13,8 +13,8 @@ class SubscriptionView(View):
             item.callback = self.selectDefer
             self.add_item(item)
     
-    def selectDefer(self, interaction: Interaction):
-        interaction.response.defer()
+    async def selectDefer(self, interaction: Interaction):
+        await interaction.response.defer()
     
     @button(label='Confirm', style=ButtonStyle.green, row=2)
     async def confirm(self, interaction: Interaction, button: Button):

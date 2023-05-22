@@ -61,7 +61,6 @@ class CommandManager:
 
         @self.tree.command(name="print_subscribed_channels", description="Shows all subscribed channels for your account.")
         async def watch_channel(interaction: Interaction):
-            await interaction.response.send_message('Stubbed command')
             DataManager.loadUserSettings(interaction.user.id)
             outString = ''
             members = interaction.guild.members

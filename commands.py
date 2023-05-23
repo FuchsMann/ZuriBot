@@ -60,10 +60,10 @@ class CommandManager:
 
         @self.tree.command(name="print_subscribed_channels", description="Shows all subscribed channels for your account.")
         async def watch_channel(interaction: Interaction):
-            DataManager.loadUserSettings(interaction.user.id)
+            userSettings = DataManager.loadUserSettings(interaction.user.id)
             outString = ''
             members = interaction.guild.members
-            for channel in DataManager.loadUserSettings(interaction.user.id).channelSubscriptions:
+            for channel in userSettings.channelSubscriptions:
                 if channel.guildID == interaction.guild_id:
                     channelString = json.dumps(
                         {

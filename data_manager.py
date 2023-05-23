@@ -73,7 +73,7 @@ class DataManager:
         DataManager.ensureUserSettingsFileExists(user_id)
         path = Path(USERPATH, str(user_id) + USERSETTINGS_BASENAME)
         settings = UserSettings(user_id)
-        settings.toJSON(path)
+        settings.fromJSON(path)
         return settings
     
     def saveUserSettings(user_id: int, settings: UserSettings) -> None:

@@ -55,8 +55,8 @@ class ImageFunctions:
         overImage = Image.open(
             Path('image_manipulation', 'images', 'pepperdream.png'))
         canvas = Image.new(
-            'RGBA', (1331, 1008), (255, 255, 255))
-        inImage = inImage.resize((), Image.ANTIALIAS)
+            'RGBA', overImage.size, (255, 255, 255))
+        inImage = inImage.resize((1331, 1008), Image.ANTIALIAS)
         canvas.paste(
             inImage, (61, 116), inImage
         )

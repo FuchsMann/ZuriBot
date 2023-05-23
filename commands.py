@@ -3,7 +3,7 @@ from discord import app_commands, Client, Interaction, User, File, VoiceChannel,
 import json
 from io import BytesIO
 from data_manager import DataManager
-from image_manipulation.soy_functions import SoyFunctions
+from image_manipulation.image_functions import ImageFunctions
 
 
 class CommandManager:
@@ -69,7 +69,7 @@ class CommandManager:
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
                     if 'image' in attachment.content_type:
-                        outfile = SoyFunctions.soy(attachment.url)
+                        outfile = ImageFunctions.soy(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)
                 return
@@ -80,7 +80,7 @@ class CommandManager:
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
                     if 'image' in attachment.content_type:
-                        outfile = SoyFunctions.soyphone(attachment.url)
+                        outfile = ImageFunctions.soyphone(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)
                 return
@@ -91,7 +91,7 @@ class CommandManager:
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
                     if 'image' in attachment.content_type:
-                        outfile = SoyFunctions.soyphone(attachment.url)
+                        outfile = ImageFunctions.pepperdream(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)
                 return

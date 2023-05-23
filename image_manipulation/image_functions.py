@@ -5,10 +5,12 @@ from pathlib import Path
 import requests
 
 
-class SoyFunctions:
+class ImageFunctions:
     def soy(imageUrl: str) -> File:
-        inImage = Image.open(BytesIO(requests.get(imageUrl).content)).convert('RGBA')
-        overImage = Image.open(Path('image_manipulation', 'images', 'soyjaks.png'))
+        inImage = Image.open(
+            BytesIO(requests.get(imageUrl).content)).convert('RGBA')
+        overImage = Image.open(
+            Path('image_manipulation', 'images', 'soyjaks.png'))
         overImage = overImage.resize(inImage.size, Image.ANTIALIAS)
         inImage.paste(
             overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage
@@ -20,7 +22,8 @@ class SoyFunctions:
         return File(byteArr, filename='Soy.jpg')
 
     def soyphone(imageUrl: str) -> File:
-        inImage = Image.open(BytesIO(requests.get(imageUrl).content)).convert('RGBA')
+        inImage = Image.open(
+            BytesIO(requests.get(imageUrl).content)).convert('RGBA')
         if inImage.size[0] / inImage.size[1] >= 1:
             overImage = Image.open(
                 Path('image_manipulation', 'images', 'soyphoneH.png')
@@ -45,3 +48,23 @@ class SoyFunctions:
         rootImage.save(byteArr, 'JPEG')
         byteArr.seek(0)
         return File(byteArr, filename='Soyphone.jpg')
+
+    def pepperdream(imageUrl: str) -> File:
+        inImage = Image.open(
+            BytesIO(requests.get(imageUrl).content)).convert('RGBA')
+        overImage = Image.open(
+            Path('image_manipulation', 'images', 'pepperdream.png'))
+        canvas = Image.new(
+            'RGBA', (1331, 1008), (255, 255, 255))
+        inImage = inImage.resize((), Image.ANTIALIAS)
+        canvas.paste(
+            inImage, (61, 116), inImage
+        )
+        canvas.paste(
+            overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage
+        )
+        byteArr = BytesIO()
+        canvas = inImage.convert('RGB')
+        canvas.save(byteArr, 'JPEG')
+        byteArr.seek(0)
+        return File(byteArr, filename='PepperDream.jpg')

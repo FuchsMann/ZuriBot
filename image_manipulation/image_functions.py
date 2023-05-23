@@ -68,3 +68,23 @@ class ImageFunctions:
         canvas.save(byteArr, 'JPEG')
         byteArr.seek(0)
         return File(byteArr, filename='PepperDream.jpg')
+    
+    def tv(imageUrl: str) -> File:
+        inImage = Image.open(
+            BytesIO(requests.get(imageUrl).content)).convert('RGBA')
+        overImage = Image.open(
+            Path('image_manipulation', 'images', 'tv.png'))
+        canvas = Image.new(
+            'RGBA', overImage.size, (0, 0, 0, 0))
+        inImage = inImage.resize((281, 195), Image.ANTIALIAS).rotate(7.3, expand=0)
+        canvas.paste(
+            inImage, (579, 254, 579 + 281, 254 + 195)
+        )
+        canvas.paste(
+            overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage
+        )
+        byteArr = BytesIO()
+        canvas = canvas.convert('RGB')
+        canvas.save(byteArr, 'JPEG')
+        byteArr.seek(0)
+        return File(byteArr, filename='TV.jpg')

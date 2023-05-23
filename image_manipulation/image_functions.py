@@ -61,10 +61,10 @@ class ImageFunctions:
             inImage, (61, 116, 61 + 1331, 116 + 1008)
         )
         canvas.paste(
-            overImage, (0, 0, overImage.size[0], overImage.size[1])
+            overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage
         )
         byteArr = BytesIO()
-        canvas = inImage.convert('RGB')
+        canvas = canvas.convert('RGB')
         canvas.save(byteArr, 'JPEG')
         byteArr.seek(0)
         return File(byteArr, filename='PepperDream.jpg')

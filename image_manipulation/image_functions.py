@@ -58,7 +58,7 @@ class ImageFunctions:
             'RGBA', overImage.size, (255, 255, 255))
         inImage = inImage.resize((1331, 1008), Image.ANTIALIAS)
         canvas.paste(
-            inImage, (61, 116), inImage
+            inImage, (61, 116, 61 + 1331, 116 + 1008), inImage
         )
         canvas.paste(
             overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage

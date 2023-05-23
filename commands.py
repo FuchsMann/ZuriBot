@@ -96,3 +96,14 @@ class CommandManager:
                             await interaction.response.send_message(file=outfile)
                 return
             await interaction.response.send_message('No images detected')
+            
+        @self.tree.context_menu(name="TV")
+        async def tv(interaction: Interaction, message: Message):
+            if len(message.attachments) != 0:
+                for attachment in message.attachments:
+                    if 'image' in attachment.content_type:
+                        outfile = ImageFunctions.tv(attachment.url)
+                        if outfile is not None:
+                            await interaction.response.send_message(file=outfile)
+                return
+            await interaction.response.send_message('No images detected')

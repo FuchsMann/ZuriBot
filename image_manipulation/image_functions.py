@@ -6,6 +6,7 @@ import requests
 
 
 class ImageFunctions:
+    @staticmethod
     def soy(imageUrl: str) -> File:
         inImage = Image.open(
             BytesIO(requests.get(imageUrl).content)).convert('RGBA')
@@ -20,7 +21,8 @@ class ImageFunctions:
         inImage.save(byteArr, 'JPEG')
         byteArr.seek(0)
         return File(byteArr, filename='Soy.jpg')
-
+    
+    @staticmethod
     def soyphone(imageUrl: str) -> File:
         inImage = Image.open(
             BytesIO(requests.get(imageUrl).content)).convert('RGBA')
@@ -29,7 +31,7 @@ class ImageFunctions:
                 Path('image_manipulation', 'images', 'soyphoneH.png')
             )
             rootImage = Image.new('RGBA', overImage.size, (255, 255, 255))
-            inImage = inImage.rotate(-0.92, expand=1)
+            inImage = inImage.rotate(-0.92, expand=True)
             inImage = inImage.resize((372, 216), Image.ANTIALIAS)
             rootImage.paste(inImage, (71, 225, 443, 441), inImage)
         else:
@@ -37,7 +39,7 @@ class ImageFunctions:
                 Path('image_manipulation', 'images', 'soyphoneV.png')
             )
             rootImage = Image.new('RGBA', overImage.size, (255, 255, 255))
-            inImage = inImage.rotate(4.78, expand=1)
+            inImage = inImage.rotate(4.78, expand=True)
             inImage = inImage.resize((276, 447), Image.ANTIALIAS)
             rootImage.paste(inImage, (24, 65, 300, 512), inImage)
         rootImage.paste(
@@ -49,6 +51,7 @@ class ImageFunctions:
         byteArr.seek(0)
         return File(byteArr, filename='Soyphone.jpg')
 
+    @staticmethod
     def pepperdream(imageUrl: str) -> File:
         inImage = Image.open(
             BytesIO(requests.get(imageUrl).content)).convert('RGBA')
@@ -69,6 +72,7 @@ class ImageFunctions:
         byteArr.seek(0)
         return File(byteArr, filename='PepperDream.jpg')
     
+    @staticmethod
     def tv(imageUrl: str) -> File:
         inImage = Image.open(
             BytesIO(requests.get(imageUrl).content)).convert('RGBA')
@@ -76,7 +80,7 @@ class ImageFunctions:
             Path('image_manipulation', 'images', 'tv.png'))
         canvas = Image.new(
             'RGBA', overImage.size, (0, 0, 0, 0))
-        inImage = inImage.resize((281, 195), Image.ANTIALIAS).rotate(7.3, expand=0)
+        inImage = inImage.resize((281, 195), Image.ANTIALIAS).rotate(7.3, expand=False)
         canvas.paste(
             inImage, (579, 254, 579 + 281, 254 + 195)
         )

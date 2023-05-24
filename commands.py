@@ -22,7 +22,7 @@ class CommandManager:
                 interaction.guild_id).toDict(), indent=2).encode('UTF-8'))
             outBytes.seek(0)
             file = File(fp=outBytes, filename="messages.json")
-            await interaction.response.send_message(file=file)
+            await interaction.response.send_message(file=file, ephemeral=True)
 
         @self.tree.command(name="join_message", description="A custom message for Zuri to say for a certain member")
         async def join_message(interaction: Interaction, user_mention: User, custom_message: str):
@@ -31,19 +31,19 @@ class CommandManager:
                 return
             DataManager.addGuildCustomMessage(
                 interaction.guild_id, user_mention.id, custom_message)
-            await interaction.response.send_message(f'Message "{custom_message}" was added for {user_mention.name}')
+            await interaction.response.send_message(f'Message "{custom_message}" was added for {user_mention.name}', ephemeral=True)
 
         @self.tree.command(name="remove_message", description="Remove a users custom message from Zuri's memory")
         async def remove_message(interaction: Interaction, user_mention: User):
             DataManager.removeGuildCustomMessage(
                 interaction.guild_id, user_mention.id)
-            await interaction.response.send_message(f'Message for {user_mention.name} was removed')
+            await interaction.response.send_message(f'Message for {user_mention.name} was removed', ephemeral=True)
 
         @self.tree.command(name="watch_channel", description="Adds/removes a channel from Zuri's watchlist")
         async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel):
             action: str = DataManager.toggleWatchedChannel(
                 interaction.guild_id, voice_channel.id, voice_channel.name)
-            await interaction.response.send_message(f'Channel {voice_channel.name} was {action} to the watchlist')
+            await interaction.response.send_message(f'Channel {voice_channel.name} was {action} to the watchlist', ephemeral=True)
 
         @self.tree.command(name="print_channels", description="Show Zuri's channel watchlist")
         async def print_channels(interaction: Interaction):
@@ -52,7 +52,7 @@ class CommandManager:
                 interaction.guild_id).toDict(), indent=2).encode('UTF-8'))
             outBytes.seek(0)
             file = File(fp=outBytes, filename="channels.json")
-            await interaction.response.send_message(file=file)
+            await interaction.response.send_message(file=file, ephemeral=True)
 
         @self.tree.command(name="subscribe", description="Adds/removes a channel from your notifications, optional argument for specific artists")
         async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel, artist: Optional[Member] = None):

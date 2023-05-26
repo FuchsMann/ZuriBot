@@ -89,6 +89,8 @@ class CommandManager:
                     for member in interaction.guild.members:
                         lastMessages[member] = None
                     for message in messages:
+                        if not message.author in lastMessages.keys():
+                            continue
                         if lastMessages[message.author] is None or message.created_at > lastMessages[message.author].created_at:
                             lastMessages[message.author] = message
 

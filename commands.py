@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import pytz
+from time import sleep
 from typing import Optional
 from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member
 import json
@@ -76,8 +77,11 @@ class CommandManager:
                     messages: list[Message] = []
                     afterDate: datetime = datetime.now() - timedelta(days=60)
                     for channel in interaction.guild.text_channels:
-                        async for message in channel.history(limit=None, after=afterDate):
-                            messages.append(message)
+                        try:
+                            async for message in channel.history(limit=None, after=afterDate):
+                                messages.append(message)
+                        except:
+                            pass
 
                     referenceDate: datetime = datetime.now(
                         pytz.timezone('Europe/Berlin'))
@@ -93,7 +97,7 @@ class CommandManager:
                         referenceDate - x[1].created_at).days)
                     sortedMessages.reverse()
                     lastMessages = dict(sortedMessages)
-                    
+
                     for member in lastMessages:
                         if lastMessages[member] is None:
                             outString += f'{member.name} - 60+\n'

@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+import pytz
 from typing import Optional
 from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member
 import json
@@ -63,8 +65,46 @@ class CommandManager:
             await interaction.response.send_message('Stubbed command')
 
         @self.tree.command(name="list_inactives", description="Admin command")
-        async def list_inactives(interaction: Interaction):
-            await interaction.response.send_message('Stubbed command')
+        async def list_inactives(interaction: Interaction) -> None:
+            if interaction.guild is None or interaction.channel is None:
+                await interaction.response.send_message('This command can only be used in a server')
+                return
+
+            if not interaction.user is None:
+                member = await interaction.guild.fetch_member(interaction.user.id)
+                if member.id in [1059937387574206514, 328142516362805249] or interaction.channel.permissions_for(member).administrator:
+                    messages: list[Message] = []
+                    afterDate: datetime = datetime.now() - timedelta(days=60)
+                    for channel in interaction.guild.text_channels:
+                        async for message in channel.history(limit=None, after=afterDate):
+                            messages.append(message)
+
+                    referenceDate: datetime = datetime.now(
+                        pytz.timezone('Europe/Berlin'))
+                    lastMessages: dict[Member, Message] = {}
+                    for member in interaction.guild.members:
+                        lastMessages[member] = None
+                    for message in messages:
+                        if lastMessages[message.author] is None or message.created_at > lastMessages[message.author].created_at:
+                            lastMessages[message.author] = message
+
+                    outString: str = 'User - Days since last message\n'
+                    sortedMessages = sorted(lastMessages.items(), key=lambda x: (
+                        referenceDate - x[1].created_at).days)
+                    sortedMessages.reverse()
+                    lastMessages = dict(sortedMessages)
+                    
+                    for member in lastMessages:
+                        if lastMessages[member] is None:
+                            outString += f'{member.name} - 60+\n'
+                        else:
+                            outString += f'{member.name} - {(referenceDate - lastMessages[member].created_at).days}\n'
+                    await interaction.response.send_message(outString)
+                    return
+
+                else:
+                    await interaction.response.send_message('You do not have permission to use this command')
+                    return
 
         # CONTEXT MENU STUFF
 

@@ -19,7 +19,7 @@ class CommandManager:
         async def print_messages(interaction: Interaction):
             outBytes = BytesIO()
             outBytes.write(json.dumps(DataManager.loadGuildCustomMessages(
-                interaction.guild_id).toDict(), indent=2).encode('UTF-8'))
+                interaction.guild_id).toDict(), indent=2).encode('UTF-8'))  # type: ignore
             outBytes.seek(0)
             file = File(fp=outBytes, filename="messages.json")
             await interaction.response.send_message(file=file, ephemeral=True)
@@ -30,36 +30,40 @@ class CommandManager:
                 await interaction.response.send_message(f'Custom message cannot contain mentions')
                 return
             DataManager.addGuildCustomMessage(
-                interaction.guild_id, user_mention.id, custom_message)
+                interaction.guild_id, user_mention.id, custom_message)  # type: ignore
             await interaction.response.send_message(f'Message "{custom_message}" was added for {user_mention.name}', ephemeral=True)
 
         @self.tree.command(name="remove_message", description="Remove a users custom message from Zuri's memory")
         async def remove_message(interaction: Interaction, user_mention: User):
             DataManager.removeGuildCustomMessage(
-                interaction.guild_id, user_mention.id)
+                interaction.guild_id, user_mention.id)  # type: ignore
             await interaction.response.send_message(f'Message for {user_mention.name} was removed', ephemeral=True)
 
         @self.tree.command(name="watch_channel", description="Adds/removes a channel from Zuri's watchlist")
         async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel):
             action: str = DataManager.toggleWatchedChannel(
-                interaction.guild_id, voice_channel.id, voice_channel.name)
+                interaction.guild_id, voice_channel.id, voice_channel.name)  # type: ignore
             await interaction.response.send_message(f'Channel {voice_channel.name} was {action} to the watchlist', ephemeral=True)
 
         @self.tree.command(name="print_channels", description="Show Zuri's channel watchlist")
         async def print_channels(interaction: Interaction):
             outBytes = BytesIO()
             outBytes.write(json.dumps(DataManager.loadWatchedChannels(
-                interaction.guild_id).toDict(), indent=2).encode('UTF-8'))
+                interaction.guild_id).toDict(), indent=2).encode('UTF-8'))  # type: ignore
             outBytes.seek(0)
             file = File(fp=outBytes, filename="channels.json")
             await interaction.response.send_message(file=file, ephemeral=True)
 
         @self.tree.command(name="subscribe", description="Adds/removes a channel from your notifications, optional argument for specific artists")
-        async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel, artist: Optional[Member] = None):
+        async def subscribe(interaction: Interaction, voice_channel: VoiceChannel, artist: Optional[Member] = None):
             await interaction.response.send_message(f'Stubbed command; arg feedback: {voice_channel}, {artist}')
 
         @self.tree.command(name="print_subscribed_channels", description="Shows all subscribed channels for your account.")
-        async def watch_channel(interaction: Interaction):
+        async def print_subs(interaction: Interaction):
+            await interaction.response.send_message('Stubbed command')
+
+        @self.tree.command(name="list_inactives", description="Admin command")
+        async def list_inactives(interaction: Interaction):
             await interaction.response.send_message('Stubbed command')
 
         # CONTEXT MENU STUFF
@@ -68,7 +72,7 @@ class CommandManager:
         async def soy(interaction: Interaction, message: Message):
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
-                    if 'image' in attachment.content_type:
+                    if 'image' in attachment.content_type:  # type: ignore
                         outfile = ImageFunctions.soy(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)
@@ -79,29 +83,29 @@ class CommandManager:
         async def soyphone(interaction: Interaction, message: Message):
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
-                    if 'image' in attachment.content_type:
+                    if 'image' in attachment.content_type:  # type: ignore
                         outfile = ImageFunctions.soyphone(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)
                 return
             await interaction.response.send_message('No images detected')
-            
+
         @self.tree.context_menu(name="PepperDream")
         async def pepperdream(interaction: Interaction, message: Message):
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
-                    if 'image' in attachment.content_type:
+                    if 'image' in attachment.content_type:  # type: ignore
                         outfile = ImageFunctions.pepperdream(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)
                 return
             await interaction.response.send_message('No images detected')
-            
+
         @self.tree.context_menu(name="TV")
         async def tv(interaction: Interaction, message: Message):
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
-                    if 'image' in attachment.content_type:
+                    if 'image' in attachment.content_type:  # type: ignore
                         outfile = ImageFunctions.tv(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)

@@ -112,8 +112,9 @@ class CommandManager:
                                 if not member is None:
                                     if not memberID in memberLatestMessage.keys():
                                         memberLatestMessageAssigned[member.name] = '60+ days'
-                                    memberLatestMessageAssigned[
-                                        member.name] = f'{(referenceDate - memberLatestMessage[memberID]).days} days'
+                                    else:
+                                        memberLatestMessageAssigned[
+                                            member.name] = f'{(referenceDate - memberLatestMessage[memberID]).days} days'
                                     
                             sortedMembers = dict(sorted(memberLatestMessageAssigned.items(), key=lambda x: x[1], reverse=True))
 

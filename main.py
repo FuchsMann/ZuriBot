@@ -36,6 +36,9 @@ class ZuriBot(discord.Client):
         elif before.channel is not None and after.channel is None:
             if watchedChannels.contains(before.channel.id):
                 await before.channel.send(f'Goodbye **{memberName}**! I hope you had a good time!')
+        elif after.channel is not None and not before.self_stream and after.self_stream:
+            if watchedChannels.contains(after.channel.id):
+                await after.channel.send(f'**{memberName}** started streaming. Meow~')
 
 
 client = ZuriBot()

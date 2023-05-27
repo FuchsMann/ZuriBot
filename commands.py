@@ -87,18 +87,18 @@ class CommandManager:
 
                             guild = interaction.guild
 
-                            meassageCollector: list[Message] = []
+                            messageCollector: list[Message] = []
 
                             for channel in guild.text_channels:
                                 try:
-                                    meassageCollector.extend([message async for message in channel.history(limit=None, after=referenceDate - timedelta(days=60), oldest_first=False)])
+                                    messageCollector.extend([message async for message in channel.history(limit=None, after=referenceDate - timedelta(days=60), oldest_first=False)])
                                 except:
                                     pass
 
                             memberIDs: list[int] = [
                                 member.id for member in guild.members]
                             memberLatestMessage: dict[int, datetime] = {}
-                            for message in meassageCollector:
+                            for message in messageCollector:
                                 if not message.author is None and message.author.id in memberIDs:
                                     if not message.author.id in memberLatestMessage.keys():
                                         memberLatestMessage[message.author.id] = message.created_at
@@ -106,25 +106,19 @@ class CommandManager:
                                         if message.created_at > memberLatestMessage[message.author.id]:
                                             memberLatestMessage[message.author.id] = message.created_at
 
-                            # sort by date, oldest first
-
-                            memberLatestMessage = dict(sorted(
-                                memberLatestMessage.items(), key=lambda item: item[1]))
-
                             memberLatestMessageAssigned: dict[str, str] = {}
-                            for memberID in memberLatestMessage.keys():
+                            for memberID in memberIDs:
                                 member = await guild.fetch_member(memberID)
                                 if not member is None:
-                                    if memberLatestMessage[memberID] is None:
+                                    if not memberID in memberLatestMessage.keys():
                                         memberLatestMessageAssigned[member.name] = '60+ days'
                                     memberLatestMessageAssigned[
                                         member.name] = f'{(referenceDate - memberLatestMessage[memberID]).days} days'
-                                else:
-                                    memberLatestMessageAssigned[str(
-                                        memberID)] = f'{(referenceDate - memberLatestMessage[memberID]).days} days'
+                                    
+                            sortedMembers = dict(sorted(memberLatestMessageAssigned.items(), key=lambda x: x[1], reverse=True))
 
                             outStr = json.dumps(
-                                memberLatestMessageAssigned, indent=2)
+                                sortedMembers, indent=2)
                             virtualFile.write(outStr.encode('UTF-8'))
                             virtualFile.seek(0)
                             await interaction.followup.send(file=File(virtualFile, filename='inactive.txt'))

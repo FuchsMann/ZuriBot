@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import pytz
 from time import sleep
 from typing import Optional
-from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member
+from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member, TextChannel
 import json
 from io import BytesIO
 from data_manager import DataManager
@@ -74,38 +74,64 @@ class CommandManager:
             if not interaction.user is None:
                 member = await interaction.guild.fetch_member(interaction.user.id)
                 if member.id in [1059937387574206514, 328142516362805249] or interaction.channel.permissions_for(member).administrator:
-                    messages: list[Message] = []
-                    afterDate: datetime = datetime.now() - timedelta(days=60)
-                    for channel in interaction.guild.text_channels:
+                    await interaction.response.send_message('Starting inactivity check. This could take a while.')
+
+                    if isinstance(interaction.channel, TextChannel):
                         try:
-                            async for message in channel.history(limit=None, after=afterDate):
-                                messages.append(message)
-                        except:
-                            pass
+                            referenceDate: datetime = datetime.now(
+                                pytz.utc)
+                            virtualFile: BytesIO = BytesIO()
 
-                    referenceDate: datetime = datetime.now(
-                        pytz.timezone('Europe/Berlin'))
-                    lastMessages: dict[Member, Message] = {}
-                    for member in interaction.guild.members:
-                        lastMessages[member] = None
-                    for message in messages:
-                        if not message.author in lastMessages.keys():
-                            continue
-                        if lastMessages[message.author] is None or message.created_at > lastMessages[message.author].created_at:
-                            lastMessages[message.author] = message
+                            headerString = f'Inactive users:\n{referenceDate - timedelta(days=60)}\nUSERNAME - DAYS SINCE LAST MESSAGE\n'
+                            virtualFile.write(headerString.encode('UTF-8'))
 
-                    outString: str = 'User - Days since last message\n'
-                    sortedMessages = sorted(lastMessages.items(), key=lambda x: (
-                        referenceDate - x[1].created_at).days)
-                    sortedMessages.reverse()
-                    lastMessages = dict(sortedMessages)
+                            guild = interaction.guild
 
-                    for member in lastMessages:
-                        if lastMessages[member] is None:
-                            outString += f'{member.name} - 60+\n'
-                        else:
-                            outString += f'{member.name} - {(referenceDate - lastMessages[member].created_at).days}\n'
-                    await interaction.response.send_message(outString)
+                            meassageCollector: list[Message] = []
+
+                            for channel in guild.text_channels:
+                                try:
+                                    meassageCollector.extend([message async for message in channel.history(limit=None, after=referenceDate - timedelta(days=60), oldest_first=False)])
+                                except:
+                                    pass
+
+                            memberIDs: list[int] = [
+                                member.id for member in guild.members]
+                            memberLatestMessage: dict[int, datetime] = {}
+                            for message in meassageCollector:
+                                if not message.author is None and message.author.id in memberIDs:
+                                    if not message.author.id in memberLatestMessage.keys():
+                                        memberLatestMessage[message.author.id] = message.created_at
+                                    else:
+                                        if message.created_at > memberLatestMessage[message.author.id]:
+                                            memberLatestMessage[message.author.id] = message.created_at
+
+                            # sort by date, oldest first
+
+                            memberLatestMessage = dict(sorted(
+                                memberLatestMessage.items(), key=lambda item: item[1]))
+
+                            memberLatestMessageAssigned: dict[str, str] = {}
+                            for memberID in memberLatestMessage.keys():
+                                member = await guild.fetch_member(memberID)
+                                if not member is None:
+                                    if memberLatestMessage[memberID] is None:
+                                        memberLatestMessageAssigned[member.name] = '60+ days'
+                                    memberLatestMessageAssigned[
+                                        member.name] = f'{(referenceDate - memberLatestMessage[memberID]).days} days'
+                                else:
+                                    memberLatestMessageAssigned[str(
+                                        memberID)] = f'{(referenceDate - memberLatestMessage[memberID]).days} days'
+
+                            outStr = json.dumps(
+                                memberLatestMessageAssigned, indent=2)
+                            virtualFile.write(outStr.encode('UTF-8'))
+                            virtualFile.seek(0)
+                            await interaction.followup.send(file=File(virtualFile, filename='inactive.txt'))
+                        except Exception as e:
+                            await interaction.followup.send(content='Something broke, sorry.\n\n' + str(e))
+                    else:
+                        await interaction.followup.send(content='This command can only be used in a text channel')
                     return
 
                 else:

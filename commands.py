@@ -2,11 +2,12 @@ from datetime import datetime, timedelta
 import pytz
 from time import sleep
 from typing import Optional
-from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member, TextChannel
+from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member, TextChannel, Invite
 import json
 from io import BytesIO
 from database.database import db
 from image_manipulation.image_functions import ImageFunctions
+from embeds.help import HelpEmbeds
 
 
 class CommandManager:
@@ -17,6 +18,22 @@ class CommandManager:
     def registerCommands(self):
 
         # SLASH COMMANDS
+
+        @self.tree.command(name="help", description="Shows a the help page")
+        async def help(interaction: Interaction):
+            await interaction.response.send_message(embed=HelpEmbeds.basicHelp(), ephemeral=True)
+
+        @self.tree.command(name="create_invite", description="Creates a single use invite")
+        async def invite(interaction: Interaction):
+            if not interaction.user.id in [328142516362805249]:
+                await interaction.response.send_message("You are not allowed to use this command (yet)", ephemeral=True)
+                return
+            # check if channel is text channel
+            if interaction.channel is None or not isinstance(interaction.channel, TextChannel):
+                await interaction.response.send_message("This command can only be used in a text channel", ephemeral=True)
+                return
+            invite = await interaction.channel.create_invite(max_uses=1, max_age=0)
+            await interaction.response.send_message(invite.url, ephemeral=True)
 
         @self.tree.command(name="print_messages", description="Shows all current custom messages for this guild")
         async def print_messages(interaction: Interaction):

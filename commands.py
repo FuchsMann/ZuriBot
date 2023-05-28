@@ -5,7 +5,7 @@ from typing import Optional
 from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member, TextChannel
 import json
 from io import BytesIO
-from data_manager import DataManager
+from database.database import db
 from image_manipulation.image_functions import ImageFunctions
 
 
@@ -20,9 +20,17 @@ class CommandManager:
 
         @self.tree.command(name="print_messages", description="Shows all current custom messages for this guild")
         async def print_messages(interaction: Interaction):
+            if interaction.guild_id is None:
+                await interaction.response.send_message("This command can only be used in a server", ephemeral=True)
+                return
             outBytes = BytesIO()
-            outBytes.write(json.dumps(DataManager.loadGuildCustomMessages(
-                interaction.guild_id).toDict(), indent=2).encode('UTF-8'))  # type: ignore
+            gms = db.fetchCustomMessagesForGuild(interaction.guild_id)
+            if gms is None or gms == []:
+                await interaction.response.send_message("No custom messages for this guild", ephemeral=True)
+                return
+            outDictList = [gm.toDict() for gm in gms]
+            outBytes.write(json.dumps(outDictList, indent=2).encode(
+                'UTF-8'))  # type: ignore
             outBytes.seek(0)
             file = File(fp=outBytes, filename="messages.json")
             await interaction.response.send_message(file=file, ephemeral=True)
@@ -32,27 +40,35 @@ class CommandManager:
             if '@' in custom_message:
                 await interaction.response.send_message(f'Custom message cannot contain mentions')
                 return
-            DataManager.addGuildCustomMessage(
-                interaction.guild_id, user_mention.id, custom_message)  # type: ignore
+            db.insertIntoCustomMessage(
+                user_mention.id, interaction.guild_id, custom_message)  # type: ignore
             await interaction.response.send_message(f'Message "{custom_message}" was added for {user_mention.name}', ephemeral=True)
 
         @self.tree.command(name="remove_message", description="Remove a users custom message from Zuri's memory")
         async def remove_message(interaction: Interaction, user_mention: User):
-            DataManager.removeGuildCustomMessage(
-                interaction.guild_id, user_mention.id)  # type: ignore
+            db.removeCustomMessage(
+                user_mention.id, interaction.guild_id)  # type: ignore
             await interaction.response.send_message(f'Message for {user_mention.name} was removed', ephemeral=True)
 
         @self.tree.command(name="watch_channel", description="Adds/removes a channel from Zuri's watchlist")
         async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel):
-            action: str = DataManager.toggleWatchedChannel(
+            action: str = db.toggleWatchedChannel(
                 interaction.guild_id, voice_channel.id, voice_channel.name)  # type: ignore
             await interaction.response.send_message(f'Channel {voice_channel.name} was {action} to the watchlist', ephemeral=True)
 
         @self.tree.command(name="print_channels", description="Show Zuri's channel watchlist")
         async def print_channels(interaction: Interaction):
+            if interaction.guild_id is None:
+                await interaction.response.send_message("This command can only be used in a server", ephemeral=True)
+                return
+            gcn = db.fetchWatchedChannelsForGuild(interaction.guild_id)
+            if gcn is None or gcn == []:
+                await interaction.response.send_message("No watched channels for this guild", ephemeral=True)
+                return
             outBytes = BytesIO()
-            outBytes.write(json.dumps(DataManager.loadWatchedChannels(
-                interaction.guild_id).toDict(), indent=2).encode('UTF-8'))  # type: ignore
+            outDictList = [gm.toDict() for gm in gcn]
+            outBytes.write(json.dumps(outDictList, indent=2).encode(
+                'UTF-8'))  # type: ignore
             outBytes.seek(0)
             file = File(fp=outBytes, filename="channels.json")
             await interaction.response.send_message(file=file, ephemeral=True)
@@ -115,8 +131,9 @@ class CommandManager:
                                     else:
                                         memberLatestMessageAssigned[
                                             member.name] = f'{(referenceDate - memberLatestMessage[memberID]).days} days'
-                                    
-                            sortedMembers = dict(sorted(memberLatestMessageAssigned.items(), key=lambda x: x[1], reverse=True))
+
+                            sortedMembers = dict(
+                                sorted(memberLatestMessageAssigned.items(), key=lambda x: x[1], reverse=True))
 
                             outStr = json.dumps(
                                 sortedMembers, indent=2)

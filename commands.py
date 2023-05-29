@@ -46,7 +46,7 @@ class CommandManager:
             
         @self.tree.command(name="clear_invite_timer", description="Clears the invite timer for specified user. Admin command.")
         async def clear_invite_timer(interaction: Interaction, member_mention: Member):
-            if not interaction.user.id in [328142516362805249, 840836189417111571, 1059937387574206514]:
+            if not interaction.user.id in [328142516362805249, 840836189417111571, 1059937387574206514, 415311444897431557]:
                 await interaction.response.send_message("You are not allowed to use this command", ephemeral=True)
                 return
             memberName = member_mention.nick if member_mention.nick is not None else member_mention.name

@@ -11,6 +11,7 @@ class ZuriBot(discord.Client):
         self.authData = Auth()
         super().__init__(intents=IntentBuilder.getIntents())
         self.commandManager = CommandManager(self)
+        self.activity = discord.Activity(type=discord.ActivityType.watching, name="You. Meow~")
 
     def run(self) -> None:
         super().run(self.authData.token)

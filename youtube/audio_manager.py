@@ -1,0 +1,2 @@
+class YoutubeAudio:
+    pass

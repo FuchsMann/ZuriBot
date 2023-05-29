@@ -8,6 +8,7 @@ from io import BytesIO
 from database.database import db
 from image_manipulation.image_functions import ImageFunctions
 from embeds.help import HelpEmbeds
+from typing import Optional
 
 
 class CommandManager:
@@ -20,8 +21,12 @@ class CommandManager:
         # SLASH COMMANDS
 
         @self.tree.command(name="help", description="Shows a the help page")
-        async def help(interaction: Interaction):
-            await interaction.response.send_message(embed=HelpEmbeds.basicHelp(), ephemeral=True)
+        async def help(interaction: Interaction, section: Optional[str] = None):
+            match (section):
+                case "commands":
+                    await interaction.response.send_message(embed=HelpEmbeds.slashHelp(), ephemeral=True)
+                case None:
+                    await interaction.response.send_message(embed=HelpEmbeds.basicHelp(), ephemeral=True)
 
         @self.tree.command(name="create_invite", description="Creates a single use invite")
         async def invite(interaction: Interaction):

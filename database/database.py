@@ -130,6 +130,10 @@ class Database:
             "INSERT INTO InviteTimer (user_id, last_invite_date) VALUES (?, ?)", (user_id, last_invite_date_str))
         self.conn.commit()
 
+    def clearInviteTimer(self, user_id: int):
+        self.cur.execute("DELETE FROM InviteTimer WHERE user_id=?", (user_id,))
+        self.conn.commit()
+
 
 if not 'db' in globals():
     db = Database()

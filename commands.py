@@ -25,10 +25,6 @@ class CommandManager:
 
         @self.tree.command(name="create_invite", description="Creates a single use invite")
         async def invite(interaction: Interaction):
-            if not interaction.user.id in [328142516362805249]:
-                await interaction.response.send_message("You are not allowed to use this command (yet)", ephemeral=True)
-                return
-
             if interaction.channel is None or not isinstance(interaction.channel, TextChannel):
                 await interaction.response.send_message("This command can only be used in a text channel", ephemeral=True)
                 return
@@ -47,6 +43,15 @@ class CommandManager:
                 responseStr = f"You can create a new Invite in {nextInvite[0]} days, {nextInvite[1]} hours and {nextInvite[2]} minutes"
                 await interaction.response.send_message(responseStr, ephemeral=True)
                 return
+            
+        @self.tree.command(name="clear_invite_timer", description="Clears the invite timer for specified user. Admin command.")
+        async def clear_invite_timer(interaction: Interaction, member_mention: Member):
+            if not interaction.user.id in [328142516362805249, 840836189417111571, 1059937387574206514]:
+                await interaction.response.send_message("You are not allowed to use this command", ephemeral=True)
+                return
+            memberName = member_mention.nick if member_mention.nick is not None else member_mention.name
+            db.clearInviteTimer(member_mention.id)
+            await interaction.response.send_message(f"Cleared invite timer for {member_mention.name}", ephemeral=True)
 
         @self.tree.command(name="print_messages", description="Shows all current custom messages for this guild")
         async def print_messages(interaction: Interaction):

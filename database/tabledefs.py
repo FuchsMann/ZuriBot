@@ -20,3 +20,12 @@ class TableDefs:
             channel_id INTEGER NOT NULL,
             channel_name TEXT NOT NULL
         )"""
+
+    @staticmethod
+    def getInviteTimerTableDef():
+        # check if table InviteTimer exists, if not create one with the following columns: timer_id as PK, user_id, last_invite_date
+        return """CREATE TABLE IF NOT EXISTS InviteTimer (
+            timer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            last_invite_date TEXT NOT NULL
+        )"""

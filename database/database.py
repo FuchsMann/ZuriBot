@@ -4,12 +4,14 @@ from pathlib import Path
 # Add sibling folders to Python path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-from data_classes.custom_messages import CustomMessage
-from data_classes.watched_channels import WatchedChannel
-import sqlite3
-from database.tabledefs import TableDefs
-import signal
 import atexit
+import signal
+from database.tabledefs import TableDefs
+import sqlite3
+from data_classes.invite_timer import InviteTimer
+from data_classes.watched_channels import WatchedChannel
+from data_classes.custom_messages import CustomMessage
+from datetime import datetime
 
 
 class Database:
@@ -31,6 +33,7 @@ class Database:
     def initTables(self):
         self.cur.execute(TableDefs.getCustomMessageTableDef())
         self.cur.execute(TableDefs.getWatchedChannelTableDef())
+        self.cur.execute(TableDefs.getInviteTimerTableDef())
         self.conn.commit()
 
     # Custom Messages
@@ -63,12 +66,12 @@ class Database:
             return None
         else:
             return CustomMessage(guild_id=guild_id, user_id=user_id, message=result[0])
-        
+
     def removeCustomMessage(self, user_id: int, guild_id: int):
         self.cur.execute(
             "DELETE FROM CustomMessage WHERE user_id=? AND guild_id=?", (user_id, guild_id))
         self.conn.commit()
-        
+
     # Watched Channels
     def fetchWatchedChannel(self, channel_id: int, guild_id: int) -> WatchedChannel | None:
         self.cur.execute(
@@ -78,7 +81,7 @@ class Database:
             return None
         else:
             return WatchedChannel(guild_id=guild_id, channel_id=channel_id, channel_name=result[0])
-        
+
     def fetchWatchedChannelsForGuild(self, guild_id: int) -> list[WatchedChannel] | None:
         self.cur.execute(
             "SELECT channel_id, channel_name FROM WatchedChannel WHERE guild_id=?", (guild_id,))
@@ -93,7 +96,7 @@ class Database:
         if Database.fetchWatchedChannel(self, channel_id, guild_id) is None:
             self.cur.execute(
                 "INSERT INTO WatchedChannel (channel_id, guild_id, channel_name) VALUES (?, ?, ?)", (channel_id, guild_id, channel_name))
-            
+
     def toggleWatchedChannel(self, guild_id: int, channel_id: int, channel_name: str) -> str:
         if Database.fetchWatchedChannel(self, channel_id, guild_id) is None:
             self.cur.execute(
@@ -105,10 +108,26 @@ class Database:
                 "DELETE FROM WatchedChannel WHERE channel_id=? AND guild_id=?", (channel_id, guild_id))
             self.conn.commit()
             return "removed"
-            
+
     def removeWatchedChannel(self, channel_id: int, guild_id: int):
         self.cur.execute(
             "DELETE FROM WatchedChannel WHERE channel_id=? AND guild_id=?", (channel_id, guild_id))
+        self.conn.commit()
+
+    # Invite Timer
+    def fetchInviteTimer(self, user_id: int) -> InviteTimer | None:
+        self.cur.execute(
+            "SELECT last_invite_date FROM InviteTimer WHERE user_id=? ORDER BY timer_ID DESC LIMIT 1", (user_id,))
+        result = self.cur.fetchone()
+        if result is None:
+            return None
+        else:
+            return InviteTimer(user_id=user_id, last_invite_date=result[0])
+
+    def insertIntoInviteTimer(self, user_id: int, last_invite_date: datetime):
+        last_invite_date_str = last_invite_date.isoformat()
+        self.cur.execute(
+            "INSERT INTO InviteTimer (user_id, last_invite_date) VALUES (?, ?)", (user_id, last_invite_date_str))
         self.conn.commit()
 
 

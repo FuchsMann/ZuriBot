@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import pytz
 from time import sleep
 from typing import Optional
-from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member, TextChannel, Invite
+from discord import app_commands, Client, Interaction, User, File, VoiceChannel, Message, Member, TextChannel, Embed
 import json
 from io import BytesIO
 from database.database import db
@@ -28,12 +28,25 @@ class CommandManager:
             if not interaction.user.id in [328142516362805249]:
                 await interaction.response.send_message("You are not allowed to use this command (yet)", ephemeral=True)
                 return
-            # check if channel is text channel
+
             if interaction.channel is None or not isinstance(interaction.channel, TextChannel):
                 await interaction.response.send_message("This command can only be used in a text channel", ephemeral=True)
                 return
-            invite = await interaction.channel.create_invite(max_uses=1, max_age=0)
-            await interaction.response.send_message(invite.url, ephemeral=True)
+
+            it = db.fetchInviteTimer(interaction.user.id)
+            if it is None or it.canCreateInvite():
+                invite = await interaction.channel.create_invite(max_uses=1, max_age=0)
+                db.insertIntoInviteTimer(
+                    interaction.user.id, datetime.now(pytz.utc))
+                embed = Embed(title="Invite created", description="This invite is valid for 1 use", color=0xfabf34)
+                embed.add_field(name="Invite URL", value=invite.url)
+                embed.set_footer(text="Only you can see this invite, copy it before it vanishes.")
+                await interaction.response.send_message(embed=embed, ephemeral=True)
+            else:
+                nextInvite = it.timeToNextInvite()
+                responseStr = f"You can create a new Invite in {nextInvite[0]} days, {nextInvite[1]} hours and {nextInvite[2]} minutes"
+                await interaction.response.send_message(responseStr, ephemeral=True)
+                return
 
         @self.tree.command(name="print_messages", description="Shows all current custom messages for this guild")
         async def print_messages(interaction: Interaction):

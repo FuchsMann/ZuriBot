@@ -9,6 +9,7 @@ from database.database import db
 from image_manipulation.image_functions import ImageFunctions
 from embeds.help import HelpEmbeds
 from typing import Optional
+from auth import Auth
 
 
 class CommandManager:
@@ -37,12 +38,23 @@ class CommandManager:
             it = db.fetchInviteTimer(interaction.user.id)
             if it is None or it.canCreateInvite():
                 invite = await interaction.channel.create_invite(max_uses=1, max_age=0)
-                db.insertIntoInviteTimer(
-                    interaction.user.id, datetime.now(pytz.utc))
                 embed = Embed(title="Invite created", description="This invite is valid for 1 use", color=0xfabf34)
                 embed.add_field(name="Invite URL", value=invite.url)
                 embed.set_footer(text="Only you can see this invite, copy it before it vanishes.")
+                try:
+                    guild = interaction.guild
+                    if guild is not None:
+                        for channel in Auth().invite_posting_channels:
+                            if channel["guild_id"] == guild.id:
+                                notifChan = guild.get_channel(channel["channel_id"])
+                                if notifChan is not None and isinstance(notifChan, TextChannel):
+                                    notifEmbed = Embed(title="Invite created", description=f"An invite was created by {interaction.user.mention} in {interaction.channel.mention}", color=0xfabf34)
+                                    await notifChan.send(embed=notifEmbed)
+                except Exception as e:
+                    pass
                 await interaction.response.send_message(embed=embed, ephemeral=True)
+                db.insertIntoInviteTimer(
+                    interaction.user.id, datetime.now(pytz.utc))
             else:
                 nextInvite = it.timeToNextInvite()
                 responseStr = f"You can create a new Invite in {nextInvite[0]} days, {nextInvite[1]} hours and {nextInvite[2]} minutes"

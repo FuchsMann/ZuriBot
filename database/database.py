@@ -11,6 +11,7 @@ import sqlite3
 from data_classes.invite_timer import InviteTimer
 from data_classes.watched_channels import WatchedChannel
 from data_classes.custom_messages import CustomMessage
+from data_classes.watched_mcserver import WatchedMCServer
 from datetime import datetime
 
 
@@ -34,6 +35,7 @@ class Database:
         self.cur.execute(TableDefs.getCustomMessageTableDef())
         self.cur.execute(TableDefs.getWatchedChannelTableDef())
         self.cur.execute(TableDefs.getInviteTimerTableDef())
+        self.cur.execute(TableDefs.getWatchedMCServerTableDef())
         self.conn.commit()
 
     # Custom Messages

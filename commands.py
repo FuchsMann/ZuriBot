@@ -10,6 +10,8 @@ from image_manipulation.image_functions import ImageFunctions
 from embeds.help import HelpEmbeds
 from typing import Optional
 from auth import Auth
+import minestat
+from mcstatus import JavaServer
 
 
 class CommandManager:
@@ -201,6 +203,32 @@ class CommandManager:
                 else:
                     await interaction.response.send_message('You do not have permission to use this command')
                     return
+                
+        @self.tree.command(name="mcstatus", description="shows current status of the MC server")
+        async def mcstatus(interaction: Interaction):
+            try:
+                #ms = minestat.MineStat(Auth().mcserver_address)
+                server = JavaServer.lookup(Auth().mcserver_address)
+                status = server.status()
+                embed = Embed(title="Minecraft Server Status", description=f"The server has {status.players.online} player(s) online", color=0xfabf34)
+                embed.add_field(name="Version", value=status.version.name)
+                embed.add_field(name="Latency", value=f"{round(status.latency)} ms")
+                await interaction.response.send_message(embed=embed)
+                try:
+                    query = server.query()
+                    if query is not None:
+                        players = ''
+                        for player in query.players.names:
+                            if player == 'paulohare':
+                                players += f"Daukus\n"
+                            else:
+                                players += f"{player}\n"
+                        playerEmbed = Embed(title="Players", description=players, color=0xfabf34)
+                        interaction.channel.send(embed=playerEmbed, ephemeral=True)
+                except Exception as e:
+                    pass
+            except:
+                await interaction.response.send_message("Server could not be queried")
 
         # CONTEXT MENU STUFF
 

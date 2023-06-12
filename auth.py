@@ -8,3 +8,4 @@ class Auth:
         self.token = in_json['token']
         self.permissions_int = in_json['permissions_int']
         self.invite_posting_channels = in_json['invite_posting_channels']
+        self.mcserver_address = in_json['mcserver_address']

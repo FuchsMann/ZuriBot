@@ -11,7 +11,6 @@ from embeds.help import HelpEmbeds
 from typing import Optional
 from auth import Auth
 import minestat
-from mcstatus import JavaServer
 
 
 class CommandManager:
@@ -207,28 +206,29 @@ class CommandManager:
         @self.tree.command(name="mcstatus", description="shows current status of the MC server")
         async def mcstatus(interaction: Interaction):
             try:
-                #ms = minestat.MineStat(Auth().mcserver_address)
-                server = JavaServer.lookup(Auth().mcserver_address)
-                status = server.status()
-                embed = Embed(title="Minecraft Server Status", description=f"The server has {status.players.online} player(s) online", color=0xfabf34)
-                embed.add_field(name="Version", value=status.version.name)
-                embed.add_field(name="Latency", value=f"{round(status.latency)} ms")
+                embed = Embed(title="Minecraft Server Status", description="Data is currently being fetched.", color=0xfabf34)
                 await interaction.response.send_message(embed=embed)
-                try:
-                    query = server.query()
-                    if query is not None:
-                        players = ''
-                        for player in query.players.names:
-                            if player == 'paulohare':
-                                players += f"Daukus\n"
-                            else:
-                                players += f"{player}\n"
-                        playerEmbed = Embed(title="Players", description=players, color=0xfabf34)
-                        interaction.channel.send(embed=playerEmbed, ephemeral=True)
-                except Exception as e:
-                    pass
-            except:
-                await interaction.response.send_message("Server could not be queried")
+
+                ms = minestat.MineStat(Auth().mcserver_address.split(':')[0], int(Auth().mcserver_address.split(':')[1]))
+                embed = Embed(title="Minecraft Server Status", description=f"The server has {len(ms.player_list)} player(s) online", color=0xfabf34)
+                embed.add_field(name="Version", value=ms.version)
+                embed.add_field(name="Latency", value=f"{round(ms.latency)} ms")
+                playersList = ms.player_list
+                players = ''
+                for player in playersList:
+                    if player == 'paulohare':
+                        players += f"Daukus\n"
+                    else:
+                        players += f"{player}\n"
+                embed.add_field(name="Players", value=players, inline=False)
+                message = await interaction.original_response()
+                await message.edit(embed=embed)
+            except Exception as e:
+                message = await interaction.original_response()
+                if message is not None:
+                    await message.edit("Server could not be queried")
+                else:
+                    await interaction.response.send_message("Server could not be queried")
 
         # CONTEXT MENU STUFF
 

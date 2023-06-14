@@ -214,13 +214,14 @@ class CommandManager:
                 embed.add_field(name="Version", value=ms.version)
                 embed.add_field(name="Latency", value=f"{round(ms.latency)} ms")
                 playersList = ms.player_list
-                players = ''
-                for player in playersList:
-                    if player == 'paulohare':
-                        players += f"Daukus\n"
-                    else:
-                        players += f"{player}\n"
-                embed.add_field(name="Players", value=players, inline=False)
+                if playersList not in [None, []]:
+                    players = ''
+                    for player in playersList:
+                        if player == 'paulohare':
+                            players += f"Daukus\n"
+                        else:
+                         players += f"{player}\n"
+                    embed.add_field(name="Players", value=players, inline=False)
                 message = await interaction.original_response()
                 await message.edit(embed=embed)
             except Exception as e:

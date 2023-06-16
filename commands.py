@@ -210,24 +210,23 @@ class CommandManager:
                 await interaction.response.send_message(embed=embed)
 
                 ms = minestat.MineStat(Auth().mcserver_address.split(':')[0], int(Auth().mcserver_address.split(':')[1]))
-                embed = Embed(title="Minecraft Server Status", description=f"The server has {len(ms.player_list)} player(s) online", color=0xfabf34)
-                embed.add_field(name="Version", value=ms.version)
-                embed.add_field(name="Latency", value=f"{round(ms.latency)} ms")
-                playersList = ms.player_list
-                if playersList not in [None, []]:
+                embed = Embed(title="Minecraft Server Status", description=f"The server has {len(ms.player_list or [])} player(s) online", color=0xfabf34)
+                embed.add_field(name="Version", value=ms.version or "Unknown")
+                embed.add_field(name="Latency", value=f"{round(ms.latency or 0)} ms")
+                playersList = ms.player_list or []
+                if playersList:
                     players = ''
                     for player in playersList:
                         if player == 'paulohare':
                             players += f"Daukus\n"
                         else:
-                         players += f"{player}\n"
+                            players += f"{player}\n"
                     embed.add_field(name="Players", value=players, inline=False)
                 message = await interaction.original_response()
                 await message.edit(embed=embed)
-            except Exception as e:
-                message = await interaction.original_response()
-                if message is not None:
-                    await message.edit("Server could not be queried")
+            except:
+                if interaction.response.is_done():
+                    message = await interaction.followup.send("Server could not be queried")
                 else:
                     await interaction.response.send_message("Server could not be queried")
 

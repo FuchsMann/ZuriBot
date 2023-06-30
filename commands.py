@@ -309,7 +309,7 @@ class CommandManager:
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
                     if 'image' in attachment.content_type:  # type: ignore
-                        outfile = ImageFunctions.rotateHue(attachment.url, 90)
+                        outfile = ImageFunctions.rotateHue(attachment.url, 70)
                         if outfile is not None:
                             if not interaction.response.is_done():
                                 await interaction.response.send_message(file=outfile)

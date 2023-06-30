@@ -98,7 +98,12 @@ class ImageFunctions:
         inImage = Image.open(
             BytesIO(requests.get(imageUrl).content)).convert('RGBA')
         inImage = inImage.convert('RGBA')
-        inImage = inImage.rotate(hueOffsetDeg, expand=True)
+        # offset HSV by hueOffsetDeg
+        inImage = inImage.convert('HSV')
+        hue, saturation, value = inImage.split()
+        hue = hue.point(lambda i: (i + hueOffsetDeg) % 256)
+        inImage = Image.merge('HSV', (hue, saturation, value))
+        inImage = inImage.convert('RGBA')
         byteArr = BytesIO()
         inImage = inImage.convert('RGB')
         inImage.save(byteArr, 'JPEG')

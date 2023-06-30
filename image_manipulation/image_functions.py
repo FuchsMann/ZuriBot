@@ -92,3 +92,15 @@ class ImageFunctions:
         canvas.save(byteArr, 'JPEG')
         byteArr.seek(0)
         return File(byteArr, filename='TV.jpg')
+    
+    @staticmethod
+    def rotateHue(imageUrl: str, hueOffsetDeg: int) -> File:
+        inImage = Image.open(
+            BytesIO(requests.get(imageUrl).content)).convert('RGBA')
+        inImage = inImage.convert('RGBA')
+        inImage = inImage.rotate(hueOffsetDeg, expand=True)
+        byteArr = BytesIO()
+        inImage = inImage.convert('RGB')
+        inImage.save(byteArr, 'JPEG')
+        byteArr.seek(0)
+        return File(byteArr, filename='Rotated.jpg')

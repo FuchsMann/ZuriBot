@@ -40,17 +40,21 @@ class CommandManager:
             it = db.fetchInviteTimer(interaction.user.id)
             if it is None or it.canCreateInvite():
                 invite = await interaction.channel.create_invite(max_uses=1, max_age=0)
-                embed = Embed(title="Invite created", description="This invite is valid for 1 use", color=0xfabf34)
+                embed = Embed(
+                    title="Invite created", description="This invite is valid for 1 use", color=0xfabf34)
                 embed.add_field(name="Invite URL", value=invite.url)
-                embed.set_footer(text="Only you can see this invite, copy it before it vanishes.")
+                embed.set_footer(
+                    text="Only you can see this invite, copy it before it vanishes.")
                 try:
                     guild = interaction.guild
                     if guild is not None:
                         for channel in Auth().invite_posting_channels:
                             if channel["guild_id"] == guild.id:
-                                notifChan = guild.get_channel(channel["channel_id"])
+                                notifChan = guild.get_channel(
+                                    channel["channel_id"])
                                 if notifChan is not None and isinstance(notifChan, TextChannel):
-                                    notifEmbed = Embed(title="Invite created", description=f"An invite was created by {interaction.user.mention} in {interaction.channel.mention}", color=0xfabf34)
+                                    notifEmbed = Embed(
+                                        title="Invite created", description=f"An invite was created by {interaction.user.mention} in {interaction.channel.mention}", color=0xfabf34)
                                     await notifChan.send(embed=notifEmbed)
                 except Exception as e:
                     pass
@@ -62,7 +66,7 @@ class CommandManager:
                 responseStr = f"You can create a new Invite in {nextInvite[0]} days, {nextInvite[1]} hours and {nextInvite[2]} minutes"
                 await interaction.response.send_message(responseStr, ephemeral=True)
                 return
-            
+
         @self.tree.command(name="clear_invite_timer", description="Clears the invite timer for specified user. Admin command.")
         async def clear_invite_timer(interaction: Interaction, member_mention: Member):
             if not interaction.user.id in [328142516362805249, 840836189417111571, 1059937387574206514, 415311444897431557]:
@@ -203,17 +207,21 @@ class CommandManager:
                 else:
                     await interaction.response.send_message('You do not have permission to use this command')
                     return
-                
+
         @self.tree.command(name="mcstatus", description="shows current status of the MC server")
         async def mcstatus(interaction: Interaction):
             try:
-                embed = Embed(title="Minecraft Server Status", description="Data is currently being fetched.", color=0xfabf34)
+                embed = Embed(title="Minecraft Server Status",
+                              description="Data is currently being fetched.", color=0xfabf34)
                 await interaction.response.send_message(embed=embed)
 
-                ms = minestat.MineStat(Auth().mcserver_address.split(':')[0], int(Auth().mcserver_address.split(':')[1]))
-                embed = Embed(title="Minecraft Server Status", description=f"The server has {len(ms.player_list or [])} player(s) online", color=0xfabf34)
+                ms = minestat.MineStat(Auth().mcserver_address.split(
+                    ':')[0], int(Auth().mcserver_address.split(':')[1]))
+                embed = Embed(title="Minecraft Server Status",
+                              description=f"The server has {len(ms.player_list or [])} player(s) online", color=0xfabf34)
                 embed.add_field(name="Version", value=ms.version or "Unknown")
-                embed.add_field(name="Latency", value=f"{round(ms.latency or 0)} ms")
+                embed.add_field(
+                    name="Latency", value=f"{round(ms.latency or 0)} ms")
                 playersList = ms.player_list or []
                 if playersList:
                     players = ''
@@ -222,7 +230,8 @@ class CommandManager:
                             players += f"Daukus\n"
                         else:
                             players += f"{player}\n"
-                    embed.add_field(name="Players", value=players, inline=False)
+                    embed.add_field(
+                        name="Players", value=players, inline=False)
                 message = await interaction.original_response()
                 await message.edit(embed=embed)
             except:
@@ -239,9 +248,11 @@ class CommandManager:
                 disk = psutil.disk_usage('/')
                 embed = Embed(title="Host Server Status", color=0xfabf34)
                 embed.add_field(name="Node", value=f"Ocelot 2")
-                embed.add_field(name="CPU", value=f"cores: {psutil.cpu_count()}\nusage: {cpu}%")
+                embed.add_field(
+                    name="CPU", value=f"cores: {psutil.cpu_count()}\nusage: {cpu}%")
                 embed.add_field(name="", value=f"", inline=False)
-                embed.add_field(name="Memory", value=f"{mem.percent}%\nused: {round(mem.used / 1024 / 1024 / 1024, 2)}GB\nfree: {round(mem.free / 1024 / 1024 / 1024, 2)}GB\ntotal: {round(mem.total / 1024 / 1024 / 1024, 2)}GB")
+                embed.add_field(
+                    name="Memory", value=f"{mem.percent}%\nused: {round(mem.used / 1024 / 1024 / 1024, 2)}GB\nfree: {round(mem.free / 1024 / 1024 / 1024, 2)}GB\ntotal: {round(mem.total / 1024 / 1024 / 1024, 2)}GB")
                 embed.add_field(name="Disk", value=f"{disk.percent}%")
                 await interaction.response.send_message(embed=embed)
             except:
@@ -290,5 +301,20 @@ class CommandManager:
                         outfile = ImageFunctions.tv(attachment.url)
                         if outfile is not None:
                             await interaction.response.send_message(file=outfile)
+                return
+            await interaction.response.send_message('No images detected')
+
+        @self.tree.context_menu(name="CaseyInvert")
+        async def caseyInvert(interaction: Interaction, message: Message):
+            if len(message.attachments) != 0:
+                for attachment in message.attachments:
+                    if 'image' in attachment.content_type:  # type: ignore
+                        outfile = ImageFunctions.rotateHue(attachment.url, 90)
+                        if outfile is not None:
+                            if not interaction.response.is_done():
+                                await interaction.response.send_message(file=outfile)
+                            else:
+                                await interaction.followup.send(file=outfile)
+                                
                 return
             await interaction.response.send_message('No images detected')

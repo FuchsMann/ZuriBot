@@ -11,6 +11,7 @@ from embeds.help import HelpEmbeds
 from typing import Optional
 from auth import Auth
 import minestat
+import psutil
 
 
 class CommandManager:
@@ -229,6 +230,22 @@ class CommandManager:
                     message = await interaction.followup.send("Server could not be queried")
                 else:
                     await interaction.response.send_message("Server could not be queried")
+
+        @self.tree.command(name="hoststatus", description="shows host server stats")
+        async def hoststatus(interaction: Interaction):
+            try:
+                cpu = psutil.cpu_percent()
+                mem = psutil.virtual_memory()
+                disk = psutil.disk_usage('/')
+                embed = Embed(title="Host Server Status", color=0xfabf34)
+                embed.add_field(name="Node", value=f"Ocelot 2")
+                embed.add_field(name="CPU", value=f"cores: {psutil.cpu_count()}\nusage: {cpu}%")
+                embed.add_field(name="", value=f"", inline=False)
+                embed.add_field(name="Memory", value=f"{mem.percent}%\nused: {round(mem.used / 1024 / 1024 / 1024, 2)}GB\nfree: {round(mem.free / 1024 / 1024 / 1024, 2)}GB\ntotal: {round(mem.total / 1024 / 1024 / 1024, 2)}GB")
+                embed.add_field(name="Disk", value=f"{disk.percent}%")
+                await interaction.response.send_message(embed=embed)
+            except:
+                await interaction.response.send_message("Something went wrong")
 
         # CONTEXT MENU STUFF
 

@@ -260,14 +260,29 @@ class CommandManager:
 
         # CONTEXT MENU STUFF
 
-        @self.tree.context_menu(name="Soy")
-        async def soy(interaction: Interaction, message: Message):
+        @staticmethod
+        def get_image_urls(message: Message) -> list[str]:
+            urls: list[str] = []
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
-                    if 'image' in attachment.content_type:  # type: ignore
-                        outfile = ImageFunctions.soy(attachment.url)
-                        if outfile is not None:
+                    urls.append(attachment.url)
+            if len(message.embeds) != 0:
+                for embed in message.embeds:
+                    if embed.type == 'image' and embed.url is not None:
+                        urls.append(embed.url)
+            return urls
+
+        @self.tree.context_menu(name="Soy")
+        async def soy(interaction: Interaction, message: Message):
+            urls = get_image_urls(message)
+            if len(urls) != 0:
+                for url in urls:
+                    outfile = ImageFunctions.soy(url)
+                    if outfile is not None:
+                        if not interaction.response.is_done():
                             await interaction.response.send_message(file=outfile)
+                        else:
+                            await interaction.followup.send(file=outfile)
                 return
             await interaction.response.send_message('No images detected')
 
@@ -278,43 +293,52 @@ class CommandManager:
                     if 'image' in attachment.content_type:  # type: ignore
                         outfile = ImageFunctions.soyphone(attachment.url)
                         if outfile is not None:
-                            await interaction.response.send_message(file=outfile)
+                            if not interaction.response.is_done():
+                                await interaction.response.send_message(file=outfile)
+                            else:
+                                await interaction.followup.send(file=outfile)
                 return
             await interaction.response.send_message('No images detected')
 
         @self.tree.context_menu(name="PepperDream")
         async def pepperdream(interaction: Interaction, message: Message):
-            if len(message.attachments) != 0:
-                for attachment in message.attachments:
-                    if 'image' in attachment.content_type:  # type: ignore
-                        outfile = ImageFunctions.pepperdream(attachment.url)
-                        if outfile is not None:
+            urls = get_image_urls(message)
+            if len(urls) != 0:
+                for url in urls:
+                    outfile = ImageFunctions.pepperdream(url)
+                    if outfile is not None:
+                        if not interaction.response.is_done():
                             await interaction.response.send_message(file=outfile)
+                        else:
+                            await interaction.followup.send(file=outfile)
                 return
             await interaction.response.send_message('No images detected')
 
         @self.tree.context_menu(name="TV")
         async def tv(interaction: Interaction, message: Message):
-            if len(message.attachments) != 0:
-                for attachment in message.attachments:
-                    if 'image' in attachment.content_type:  # type: ignore
-                        outfile = ImageFunctions.tv(attachment.url)
-                        if outfile is not None:
+            urls = get_image_urls(message)
+            if len(urls) != 0:
+                for url in urls:
+                    outfile = ImageFunctions.tv(url)
+                    if outfile is not None:
+                        if not interaction.response.is_done():
                             await interaction.response.send_message(file=outfile)
+                        else:
+                            await interaction.followup.send(file=outfile)
                 return
             await interaction.response.send_message('No images detected')
 
         @self.tree.context_menu(name="CaseyInvert")
         async def caseyInvert(interaction: Interaction, message: Message):
-            if len(message.attachments) != 0:
-                for attachment in message.attachments:
-                    if 'image' in attachment.content_type:  # type: ignore
-                        outfile = ImageFunctions.rotateHue(attachment.url, 70)
-                        if outfile is not None:
-                            if not interaction.response.is_done():
-                                await interaction.response.send_message(file=outfile)
-                            else:
-                                await interaction.followup.send(file=outfile)
-                                
+            urls = get_image_urls(message)
+            if len(urls) != 0:
+                for url in urls:
+                    outfile = ImageFunctions.rotateHue(url, 70)
+                    if outfile is not None:
+                        if not interaction.response.is_done():
+                            await interaction.response.send_message(file=outfile)
+                        else:
+                            await interaction.followup.send(file=outfile)
+
                 return
             await interaction.response.send_message('No images detected')

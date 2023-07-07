@@ -97,15 +97,14 @@ class ImageFunctions:
     def rotateHue(imageUrl: str, hueOffsetDeg: int) -> File:
         inImage = Image.open(
             BytesIO(requests.get(imageUrl).content)).convert('RGBA')
-        inImage = inImage.convert('RGBA')
-        # offset HSV by hueOffsetDeg
+        alpha = inImage.getchannel('A')
         inImage = inImage.convert('HSV')
         hue, saturation, value = inImage.split()
         hue = hue.point(lambda i: (i + hueOffsetDeg) % 256)
         inImage = Image.merge('HSV', (hue, saturation, value))
         inImage = inImage.convert('RGBA')
+        inImage.putalpha(alpha)
         byteArr = BytesIO()
-        inImage = inImage.convert('RGB')
-        inImage.save(byteArr, 'JPEG')
+        inImage.save(byteArr, 'PNG')
         byteArr.seek(0)
-        return File(byteArr, filename='Rotated.jpg')
+        return File(byteArr, filename='Rotated.png')

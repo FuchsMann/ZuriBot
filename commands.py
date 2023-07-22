@@ -286,12 +286,26 @@ class CommandManager:
                 return
             await interaction.response.send_message('No images detected')
 
-        @self.tree.context_menu(name="Soyphone")
+        # @self.tree.context_menu(name="Soyphone")
+        # async def soyphone(interaction: Interaction, message: Message):
+        #     if len(message.attachments) != 0:
+        #         for attachment in message.attachments:
+        #             if 'image' in attachment.content_type:  # type: ignore
+        #                 outfile = ImageFunctions.soyphone(attachment.url)
+        #                 if outfile is not None:
+        #                     if not interaction.response.is_done():
+        #                         await interaction.response.send_message(file=outfile)
+        #                     else:
+        #                         await interaction.followup.send(file=outfile)
+        #         return
+        #     await interaction.response.send_message('No images detected')
+
+        @self.tree.context_menu(name="JavaKick")
         async def soyphone(interaction: Interaction, message: Message):
             if len(message.attachments) != 0:
                 for attachment in message.attachments:
                     if 'image' in attachment.content_type:  # type: ignore
-                        outfile = ImageFunctions.soyphone(attachment.url)
+                        outfile = ImageFunctions.javaKick(attachment.url)
                         if outfile is not None:
                             if not interaction.response.is_done():
                                 await interaction.response.send_message(file=outfile)
@@ -342,3 +356,16 @@ class CommandManager:
 
                 return
             await interaction.response.send_message('No images detected')
+
+        # #@self.tree.context_menu(name="AnimatedColorRotation")
+        # async def animatedColorRotation(interaction: Interaction, message: Message):
+        #     urls = get_image_urls(message)
+        #     if len(urls) != 0:
+        #         await interaction.response.send_message('Please be patient, I have autism')
+        #         for url in urls:
+        #             outfile = ImageFunctions.animatedColorRotation(url)
+        #             if outfile is not None:
+        #                 if interaction.response.is_done():
+        #                     await interaction.followup.send(file=outfile)
+        #         return
+        #     await interaction.response.send_message('No images detected')

@@ -13,7 +13,7 @@ class ImageFunctions:
         overImage = Image.open(
             Path('image_manipulation', 'images', 'soyjaks.png'))
         overImage = overImage.resize(
-            inImage.size, Image.ANTIALIAS)  # type: ignore
+            inImage.size, Image.LANCZOS)  # type: ignore
         inImage.paste(
             overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage
         )
@@ -23,34 +23,34 @@ class ImageFunctions:
         byteArr.seek(0)
         return File(byteArr, filename='Soy.jpg')
 
-    # @staticmethod
-    # def soyphone(imageUrl: str) -> File:
-    #     inImage = Image.open(
-    #         BytesIO(requests.get(imageUrl).content)).convert('RGBA')
-    #     if inImage.size[0] / inImage.size[1] >= 1:
-    #         overImage = Image.open(
-    #             Path('image_manipulation', 'images', 'soyphoneH.png')
-    #         )
-    #         rootImage = Image.new('RGBA', overImage.size, (255, 255, 255))
-    #         inImage = inImage.rotate(-0.92, expand=True)
-    #         inImage = inImage.resize((372, 216), Image.ANTIALIAS) # type: ignore
-    #         rootImage.paste(inImage, (71, 225, 443, 441), inImage)
-    #     else:
-    #         overImage = Image.open(
-    #             Path('image_manipulation', 'images', 'soyphoneV.png')
-    #         )
-    #         rootImage = Image.new('RGBA', overImage.size, (255, 255, 255))
-    #         inImage = inImage.rotate(4.78, expand=True)
-    #         inImage = inImage.resize((276, 447), Image.ANTIALIAS) # type: ignore
-    #         rootImage.paste(inImage, (24, 65, 300, 512), inImage)
-    #     rootImage.paste(
-    #         overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage
-    #     )
-    #     rootImage = rootImage.convert('RGB')
-    #     byteArr = BytesIO()
-    #     rootImage.save(byteArr, 'JPEG')
-    #     byteArr.seek(0)
-    #     return File(byteArr, filename='Soyphone.jpg')
+    @staticmethod
+    def soyphone(imageUrl: str) -> File:
+        inImage = Image.open(
+            BytesIO(requests.get(imageUrl).content)).convert('RGBA')
+        if inImage.size[0] / inImage.size[1] >= 1:
+            overImage = Image.open(
+                Path('image_manipulation', 'images', 'soyphoneH.png')
+            )
+            rootImage = Image.new('RGBA', overImage.size, (255, 255, 255))
+            inImage = inImage.rotate(-0.92, expand=True)
+            inImage = inImage.resize((372, 216), Image.LANCZOS) # type: ignore
+            rootImage.paste(inImage, (71, 225, 443, 441), inImage)
+        else:
+            overImage = Image.open(
+                Path('image_manipulation', 'images', 'soyphoneV.png')
+            )
+            rootImage = Image.new('RGBA', overImage.size, (255, 255, 255))
+            inImage = inImage.rotate(4.78, expand=True)
+            inImage = inImage.resize((276, 447), Image.LANCZOS) # type: ignore
+            rootImage.paste(inImage, (24, 65, 300, 512), inImage)
+        rootImage.paste(
+            overImage, (0, 0, overImage.size[0], overImage.size[1]), overImage
+        )
+        rootImage = rootImage.convert('RGB')
+        byteArr = BytesIO()
+        rootImage.save(byteArr, 'JPEG')
+        byteArr.seek(0)
+        return File(byteArr, filename='Soyphone.jpg')
 
     @staticmethod
     def javaKick(imageUrl: str) -> File:
@@ -60,7 +60,7 @@ class ImageFunctions:
             Path('image_manipulation', 'images', 'javakick.png'))
         canvas = Image.new(
             'RGBA', overImage.size, (0, 0, 0, 0))
-        inImage = inImage.resize((236, 282), Image.ANTIALIAS)  # type: ignore
+        inImage = inImage.resize((236, 282), Image.LANCZOS)  # type: ignore
         canvas.paste(
             inImage, (132, 666, 132 + 236, 666 + 282)
         )
@@ -81,7 +81,7 @@ class ImageFunctions:
             Path('image_manipulation', 'images', 'pepperdream.png'))
         canvas = Image.new(
             'RGBA', overImage.size, (0, 0, 0, 0))
-        inImage = inImage.resize((1331, 1008), Image.ANTIALIAS)  # type: ignore
+        inImage = inImage.resize((1331, 1008), Image.LANCZOS)  # type: ignore
         canvas.paste(
             inImage, (61, 116, 61 + 1331, 116 + 1008)
         )
@@ -103,7 +103,7 @@ class ImageFunctions:
         canvas = Image.new(
             'RGBA', overImage.size, (0, 0, 0, 0))
         inImage = inImage.resize(
-            (281, 195), Image.ANTIALIAS).rotate(7.3, expand=False)  # type: ignore
+            (281, 195), Image.LANCZOS).rotate(7.3, expand=False)  # type: ignore
         canvas.paste(
             inImage, (579, 254, 579 + 281, 254 + 195)
         )
@@ -117,7 +117,7 @@ class ImageFunctions:
         return File(byteArr, filename='TV.jpg')
 
     @staticmethod
-    def rotateHue(imageUrl: str, hueOffsetDeg: int) -> File:
+    def rotateHue(imageUrl: str, hueOffsetDeg: int = 70) -> File:
         inImage = Image.open(
             BytesIO(requests.get(imageUrl).content)).convert('RGBA')
         alpha = inImage.getchannel('A')
@@ -136,7 +136,7 @@ class ImageFunctions:
     # def animatedColorRotation(imageUrl: str) -> File:
     #     inImage = Image.open(
     #         BytesIO(requests.get(imageUrl).content)).convert('RGBA')
-    #     inImage.thumbnail((512, 512), Image.ANTIALIAS)
+    #     inImage.thumbnail((512, 512), Image.LANCZOS)
 
     #     alpha = inImage.getchannel('A')
     #     inImage = inImage.convert('HSV')

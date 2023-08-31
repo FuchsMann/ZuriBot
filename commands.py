@@ -12,6 +12,7 @@ from typing import Optional
 from auth import Auth
 import minestat
 import psutil
+from ui.image_view import ImageView, ResponseType
 
 
 class CommandManager:
@@ -271,101 +272,45 @@ class CommandManager:
                     if embed.type == 'image' and embed.url is not None:
                         urls.append(embed.url)
             return urls
-
-        @self.tree.context_menu(name="Soy")
-        async def soy(interaction: Interaction, message: Message):
+        
+        @staticmethod
+        async def processImages(imageFunction: callable, interaction: Interaction, message: Message, ephemeral: bool = False):
             urls = get_image_urls(message)
             if len(urls) != 0:
                 for url in urls:
-                    outfile = ImageFunctions.soy(url)
+                    outfile = imageFunction(url)
                     if outfile is not None:
                         if not interaction.response.is_done():
-                            await interaction.response.send_message(file=outfile)
+                            await interaction.response.send_message(file=outfile, ephemeral=ephemeral)
                         else:
-                            await interaction.followup.send(file=outfile)
+                            await interaction.followup.send(file=outfile, ephemeral=ephemeral)
                 return
-            await interaction.response.send_message('No images detected')
+            if not interaction.response.is_done():
+                await interaction.response.send_message('No images detected', ephemeral=ephemeral)
+            else:
+                await interaction.followup.send('No images detected', ephemeral=ephemeral)
 
-        # @self.tree.context_menu(name="Soyphone")
-        # async def soyphone(interaction: Interaction, message: Message):
-        #     if len(message.attachments) != 0:
-        #         for attachment in message.attachments:
-        #             if 'image' in attachment.content_type:  # type: ignore
-        #                 outfile = ImageFunctions.soyphone(attachment.url)
-        #                 if outfile is not None:
-        #                     if not interaction.response.is_done():
-        #                         await interaction.response.send_message(file=outfile)
-        #                     else:
-        #                         await interaction.followup.send(file=outfile)
-        #         return
-        #     await interaction.response.send_message('No images detected')
 
-        @self.tree.context_menu(name="JavaKick")
-        async def soyphone(interaction: Interaction, message: Message):
-            if len(message.attachments) != 0:
-                for attachment in message.attachments:
-                    if 'image' in attachment.content_type:  # type: ignore
-                        outfile = ImageFunctions.javaKick(attachment.url)
-                        if outfile is not None:
-                            if not interaction.response.is_done():
-                                await interaction.response.send_message(file=outfile)
-                            else:
-                                await interaction.followup.send(file=outfile)
-                return
-            await interaction.response.send_message('No images detected')
-
-        @self.tree.context_menu(name="PepperDream")
-        async def pepperdream(interaction: Interaction, message: Message):
+        @self.tree.context_menu(name="Image functions")
+        async def image_functions(interaction: Interaction, message: Message):
             urls = get_image_urls(message)
             if len(urls) != 0:
-                for url in urls:
-                    outfile = ImageFunctions.pepperdream(url)
-                    if outfile is not None:
-                        if not interaction.response.is_done():
-                            await interaction.response.send_message(file=outfile)
-                        else:
-                            await interaction.followup.send(file=outfile)
+                iView: ImageView = ImageView()
+                await interaction.response.send_message('Functions', view=iView, ephemeral=True)
+                await iView.wait()
+                match (iView.responseType):
+                    case ResponseType.SOY:
+                        await processImages(ImageFunctions.soy, interaction, message)
+                    case ResponseType.SOYPHONE:
+                        await processImages(ImageFunctions.soyphone, interaction, message)
+                    case ResponseType.JAVAKICK:
+                        await processImages(ImageFunctions.javaKick, interaction, message)
+                    case ResponseType.PEPPERDREAM:
+                        await processImages(ImageFunctions.pepperdream, interaction, message)
+                    case ResponseType.TV:
+                        await processImages(ImageFunctions.tv, interaction, message)
+                    case ResponseType.CASEYINVERT:
+                        await processImages(ImageFunctions.rotateHue, interaction, message)
+                await interaction.delete_original_response()
                 return
             await interaction.response.send_message('No images detected')
-
-        @self.tree.context_menu(name="TV")
-        async def tv(interaction: Interaction, message: Message):
-            urls = get_image_urls(message)
-            if len(urls) != 0:
-                for url in urls:
-                    outfile = ImageFunctions.tv(url)
-                    if outfile is not None:
-                        if not interaction.response.is_done():
-                            await interaction.response.send_message(file=outfile)
-                        else:
-                            await interaction.followup.send(file=outfile)
-                return
-            await interaction.response.send_message('No images detected')
-
-        @self.tree.context_menu(name="CaseyInvert")
-        async def caseyInvert(interaction: Interaction, message: Message):
-            urls = get_image_urls(message)
-            if len(urls) != 0:
-                for url in urls:
-                    outfile = ImageFunctions.rotateHue(url, 70)
-                    if outfile is not None:
-                        if not interaction.response.is_done():
-                            await interaction.response.send_message(file=outfile)
-                        else:
-                            await interaction.followup.send(file=outfile)
-
-                return
-            await interaction.response.send_message('No images detected')
-
-        # #@self.tree.context_menu(name="AnimatedColorRotation")
-        # async def animatedColorRotation(interaction: Interaction, message: Message):
-        #     urls = get_image_urls(message)
-        #     if len(urls) != 0:
-        #         await interaction.response.send_message('Please be patient, I have autism')
-        #         for url in urls:
-        #             outfile = ImageFunctions.animatedColorRotation(url)
-        #             if outfile is not None:
-        #                 if interaction.response.is_done():
-        #                     await interaction.followup.send(file=outfile)
-        #         return
-        #     await interaction.response.send_message('No images detected')

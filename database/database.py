@@ -11,13 +11,13 @@ import sqlite3
 from data_classes.invite_timer import InviteTimer
 from data_classes.watched_channels import WatchedChannel
 from data_classes.custom_messages import CustomMessage
-from data_classes.watched_mcserver import WatchedMCServer
+from data_classes.logged_invite import LoggedInvite
 from datetime import datetime
 
 
 class Database:
     def __init__(self):
-        self.conn = sqlite3.connect(Path('database', 'db', 'zuri.db'))
+        self.conn = sqlite3.connect(Path("database", "db", "zuri.db"))
         self.cur = self.conn.cursor()
         self.initTables()
         atexit.register(self.closeDB)
@@ -36,33 +36,46 @@ class Database:
         self.cur.execute(TableDefs.getWatchedChannelTableDef())
         self.cur.execute(TableDefs.getInviteTimerTableDef())
         self.cur.execute(TableDefs.getWatchedMCServerTableDef())
+        self.cur.execute(TableDefs.getLoggedInviteTableDef())
         self.conn.commit()
 
     # Custom Messages
     def insertIntoCustomMessage(self, user_id: int, guild_id: int, message: str):
         # check if entry with user_id and guild_id exists, if yes update message, if not insert new entry
         self.cur.execute(
-            "SELECT * FROM CustomMessage WHERE user_id=? AND guild_id=?", (user_id, guild_id))
+            "SELECT * FROM CustomMessage WHERE user_id=? AND guild_id=?",
+            (user_id, guild_id),
+        )
         if self.cur.fetchone() is None:
             self.cur.execute(
-                "INSERT INTO CustomMessage (user_id, guild_id, message) VALUES (?, ?, ?)", (user_id, guild_id, message))
+                "INSERT INTO CustomMessage (user_id, guild_id, message) VALUES (?, ?, ?)",
+                (user_id, guild_id, message),
+            )
         else:
             self.cur.execute(
-                "UPDATE CustomMessage SET message=? WHERE user_id=? AND guild_id=?", (message, user_id, guild_id))
+                "UPDATE CustomMessage SET message=? WHERE user_id=? AND guild_id=?",
+                (message, user_id, guild_id),
+            )
         self.conn.commit()
 
     def fetchCustomMessagesForGuild(self, guild_id: int) -> list[CustomMessage] | None:
         self.cur.execute(
-            "SELECT user_id, message FROM CustomMessage WHERE guild_id=?", (guild_id,))
+            "SELECT user_id, message FROM CustomMessage WHERE guild_id=?", (guild_id,)
+        )
         result = self.cur.fetchall()
         if result is None:
             return None
         else:
-            return [CustomMessage(guild_id=guild_id, user_id=user_id, message=message) for user_id, message in result]
+            return [
+                CustomMessage(guild_id=guild_id, user_id=user_id, message=message)
+                for user_id, message in result
+            ]
 
     def fetchCustomMessage(self, user_id: int, guild_id: int) -> CustomMessage | None:
         self.cur.execute(
-            "SELECT message FROM CustomMessage WHERE user_id=? AND guild_id=?", (user_id, guild_id))
+            "SELECT message FROM CustomMessage WHERE user_id=? AND guild_id=?",
+            (user_id, guild_id),
+        )
         result = self.cur.fetchone()
         if result is None:
             return None
@@ -71,55 +84,86 @@ class Database:
 
     def removeCustomMessage(self, user_id: int, guild_id: int):
         self.cur.execute(
-            "DELETE FROM CustomMessage WHERE user_id=? AND guild_id=?", (user_id, guild_id))
+            "DELETE FROM CustomMessage WHERE user_id=? AND guild_id=?",
+            (user_id, guild_id),
+        )
         self.conn.commit()
 
     # Watched Channels
-    def fetchWatchedChannel(self, channel_id: int, guild_id: int) -> WatchedChannel | None:
+    def fetchWatchedChannel(
+        self, channel_id: int, guild_id: int
+    ) -> WatchedChannel | None:
         self.cur.execute(
-            "SELECT channel_name FROM WatchedChannel WHERE channel_id=? AND guild_id=?", (channel_id, guild_id))
+            "SELECT channel_name FROM WatchedChannel WHERE channel_id=? AND guild_id=?",
+            (channel_id, guild_id),
+        )
         result = self.cur.fetchone()
         if result is None:
             return None
         else:
-            return WatchedChannel(guild_id=guild_id, channel_id=channel_id, channel_name=result[0])
+            return WatchedChannel(
+                guild_id=guild_id, channel_id=channel_id, channel_name=result[0]
+            )
 
-    def fetchWatchedChannelsForGuild(self, guild_id: int) -> list[WatchedChannel] | None:
+    def fetchWatchedChannelsForGuild(
+        self, guild_id: int
+    ) -> list[WatchedChannel] | None:
         self.cur.execute(
-            "SELECT channel_id, channel_name FROM WatchedChannel WHERE guild_id=?", (guild_id,))
+            "SELECT channel_id, channel_name FROM WatchedChannel WHERE guild_id=?",
+            (guild_id,),
+        )
         result = self.cur.fetchall()
         if result is None:
             return None
         else:
-            return [WatchedChannel(guild_id=guild_id, channel_id=channel_id, channel_name=channel_name) for channel_id, channel_name in result]
+            return [
+                WatchedChannel(
+                    guild_id=guild_id, channel_id=channel_id, channel_name=channel_name
+                )
+                for channel_id, channel_name in result
+            ]
 
-    def insertIntoWatchedChannels(self, guild_id: int, channel_id: int, channel_name: str):
+    def insertIntoWatchedChannels(
+        self, guild_id: int, channel_id: int, channel_name: str
+    ):
         # check if entry with channel_id and guild_id exists, if yes update channel_name, if not insert new entry
         if Database.fetchWatchedChannel(self, channel_id, guild_id) is None:
             self.cur.execute(
-                "INSERT INTO WatchedChannel (channel_id, guild_id, channel_name) VALUES (?, ?, ?)", (channel_id, guild_id, channel_name))
+                "INSERT INTO WatchedChannel (channel_id, guild_id, channel_name) VALUES (?, ?, ?)",
+                (channel_id, guild_id, channel_name),
+            )
 
-    def toggleWatchedChannel(self, guild_id: int, channel_id: int, channel_name: str) -> str:
+    def toggleWatchedChannel(
+        self, guild_id: int, channel_id: int, channel_name: str
+    ) -> str:
         if Database.fetchWatchedChannel(self, channel_id, guild_id) is None:
             self.cur.execute(
-                "INSERT INTO WatchedChannel (channel_id, guild_id, channel_name) VALUES (?, ?, ?)", (channel_id, guild_id, channel_name))
+                "INSERT INTO WatchedChannel (channel_id, guild_id, channel_name) VALUES (?, ?, ?)",
+                (channel_id, guild_id, channel_name),
+            )
             self.conn.commit()
             return "added"
         else:
             self.cur.execute(
-                "DELETE FROM WatchedChannel WHERE channel_id=? AND guild_id=?", (channel_id, guild_id))
+                "DELETE FROM WatchedChannel WHERE channel_id=? AND guild_id=?",
+                (channel_id, guild_id),
+            )
             self.conn.commit()
             return "removed"
 
     def removeWatchedChannel(self, channel_id: int, guild_id: int):
         self.cur.execute(
-            "DELETE FROM WatchedChannel WHERE channel_id=? AND guild_id=?", (channel_id, guild_id))
+            "DELETE FROM WatchedChannel WHERE channel_id=? AND guild_id=?",
+            (channel_id, guild_id),
+        )
         self.conn.commit()
 
     # Invite Timer
     def fetchInviteTimer(self, user_id: int) -> InviteTimer | None:
         self.cur.execute(
-            "SELECT last_invite_date FROM InviteTimer WHERE user_id=? ORDER BY timer_ID DESC LIMIT 1", (user_id,))
+            "SELECT last_invite_date FROM InviteTimer WHERE user_id=? ORDER BY timer_ID DESC LIMIT 1",
+            (user_id,),
+        )
         result = self.cur.fetchone()
         if result is None:
             return None
@@ -129,13 +173,78 @@ class Database:
     def insertIntoInviteTimer(self, user_id: int, last_invite_date: datetime):
         last_invite_date_str = last_invite_date.isoformat()
         self.cur.execute(
-            "INSERT INTO InviteTimer (user_id, last_invite_date) VALUES (?, ?)", (user_id, last_invite_date_str))
+            "INSERT INTO InviteTimer (user_id, last_invite_date) VALUES (?, ?)",
+            (user_id, last_invite_date_str),
+        )
         self.conn.commit()
 
     def clearInviteTimer(self, user_id: int):
         self.cur.execute("DELETE FROM InviteTimer WHERE user_id=?", (user_id,))
         self.conn.commit()
 
+    # Logged Invites
+    def insertIntoLoggedInvite(
+        self, invite_id: str, guild_id: int, inviter_id: int, invite_url: str
+    ):
+        self.cur.execute(
+            "INSERT INTO LoggedInvite (invite_id, guild_id, inviter_id, invite_url) VALUES (?, ?, ?, ?)",
+            (invite_id, guild_id, inviter_id, invite_url),
+        )
+        self.conn.commit()
 
-if not 'db' in globals():
+    def fetchLoggedInviteByID(self, invite_id: str) -> LoggedInvite | None:
+        self.cur.execute(
+            "SELECT invite_id, guild_id, inviter_id, invite_url FROM LoggedInvite WHERE invite_id=?",
+            (invite_id,),
+        )
+        result = self.cur.fetchone()
+        if result is None:
+            return None
+        else:
+            return LoggedInvite(
+                invite_id=result[0],
+                guild_id=result[1],
+                inviter_id=result[2],
+                invite_url=result[3],
+            )
+
+    def fetchAllLoggedInvites(self) -> list[LoggedInvite] | None:
+        self.cur.execute(
+            "SELECT invite_id, guild_id, inviter_id, invite_url FROM LoggedInvite"
+        )
+        result = self.cur.fetchall()
+        if result is None:
+            return None
+        else:
+            return [
+                LoggedInvite(
+                    invite_id=result[0],
+                    guild_id=result[1],
+                    inviter_id=result[2],
+                    invite_url=result[3],
+                )
+                for result in result
+            ]
+
+    def fetchAllLoggedInvitesForGuild(self, guild_id: int) -> list[LoggedInvite] | None:
+        self.cur.execute(
+            "SELECT invite_id, guild_id, inviter_id, invite_url FROM LoggedInvite WHERE guild_id=?",
+            (guild_id,),
+        )
+        result = self.cur.fetchall()
+        if result is None:
+            return None
+        else:
+            return [
+                LoggedInvite(
+                    invite_id=result[0],
+                    guild_id=result[1],
+                    inviter_id=result[2],
+                    invite_url=result[3],
+                )
+                for result in result
+            ]
+
+
+if not "db" in globals():
     db = Database()

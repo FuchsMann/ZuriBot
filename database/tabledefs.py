@@ -29,7 +29,7 @@ class TableDefs:
             user_id INTEGER NOT NULL,
             last_invite_date TEXT NOT NULL
         )"""
-    
+
     @staticmethod
     def getWatchedMCServerTableDef():
         # check if table WatchedMCServer exists, if not create one with the following columns: server_id as PK, guild_id, channel_id, message_id, server_address
@@ -39,4 +39,15 @@ class TableDefs:
             channel_id INTEGER NOT NULL,
             message_id INTEGER NOT NULL,
             server_address TEXT NOT NULL
+        )"""
+
+    @staticmethod
+    def getLoggedInviteTableDef():
+        # check if table LoggedInvite exists, if not create one with the following columns: invite_id as PK, guild_id, inviter_id, invite_url
+        return """CREATE TABLE IF NOT EXISTS LoggedInvite (
+            invite_log_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            invite_id TEXT NOT NULL,
+            guild_id INTEGER NOT NULL,
+            inviter_id INTEGER NOT NULL,
+            invite_url TEXT NOT NULL
         )"""

@@ -13,7 +13,6 @@ class Reports:
             outDict[obj['guild_id']] = int(obj['channel_id'])
         return outDict
 
-
     @staticmethod
     async def reportInvite(
         guild: Guild,
@@ -22,8 +21,9 @@ class Reports:
         member_nick: str,
         invite_url: str,
     ) -> None:
-        reportChannels = Auth().invite_posting_channels['guild_id']
-        if guild_id not in Reports.reportChannels:
+        reportChannels = Reports.getReportChannels()
+        print(reportChannels)
+        if guild_id not in reportChannels.keys():
             return
         embed = Embed(
             title="Invite Created",
@@ -37,4 +37,4 @@ class Reports:
             inline=False,
         )
         embed.set_footer(text="ZuriBot")
-        await guild.get_channel(Reports.reportChannels[guild_id]).send(embed=embed)
+        await guild.get_channel(reportChannels[guild_id]).send(embed=embed)

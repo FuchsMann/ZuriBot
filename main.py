@@ -33,7 +33,6 @@ class ZuriBot(discord.Client):
         print(f"Logged on as {self.user}!")
 
         await self.readInviteStore()
-        print(Reports.getReportChannels())
 
     async def on_voice_state_update(
         self, member: Member, before: VoiceState, after: VoiceState
@@ -45,11 +44,13 @@ class ZuriBot(discord.Client):
         memberName = member.nick if member.nick is not None else member.name
 
         def channelIsWatched(channelID: int) -> bool:
-            return channelID in [channel.channel_id for channel in watchedChannels]  # type: ignore
+            # type: ignore
+            return channelID in [channel.channel_id for channel in watchedChannels]
 
         if before.channel is None and after.channel is not None:
             if channelIsWatched(after.channel.id):
-                customMessage = db.fetchCustomMessage(member.id, member.guild.id)
+                customMessage = db.fetchCustomMessage(
+                    member.id, member.guild.id)
                 if customMessage is not None:
                     await after.channel.send(
                         customMessage.message + f"\n({memberName} joined)"
@@ -78,7 +79,8 @@ class ZuriBot(discord.Client):
         )
         inviterName: str = invite.inviter.name
         if invite.guild.get_member(invite.inviter.id) is not None:
-            inviterName = invite.guild.get_member(invite.inviter.id).display_name
+            inviterName = invite.guild.get_member(
+                invite.inviter.id).display_name
         await Reports.reportInvite(
             invite.guild,
             invite.guild.id,
@@ -104,6 +106,7 @@ class ZuriBot(discord.Client):
         invites = await member.guild.invites()
         foundInvite: Invite | None = None
         fallbackFoundInvite: LoggedInvite | None = None
+
         for invite in invites:
             inviteInternal = invitesStore.getById(invite.id, invite.guild.id)
             if inviteInternal is None:
@@ -111,36 +114,38 @@ class ZuriBot(discord.Client):
             if inviteInternal.uses < invite.uses:
                 foundInvite = invite
                 break
-        if foundInvite is not None:
+
+        inviterFinal: Member | None = foundInvite.inviter if foundInvite is not None else None
+
+        loggedInvites = db.fetchAllLoggedInvitesForGuild(member.guild.id)
+        if loggedInvites is not None:
+            for loggedInvite in loggedInvites:
+                if (
+                    invitesStore.getById(
+                        loggedInvite.invite_id, loggedInvite.guild_id
+                    )
+                    is None
+                ):
+                    fallbackFoundInvite = loggedInvite
+                    break
+
+        if fallbackFoundInvite is not None:
+            inviter = member.guild.get_member(fallbackFoundInvite.inviter_id)
+            if inviter is not None:
+                inviterFinal = inviter
+
+        if inviterFinal is not None:
             embed.add_field(
                 name="Inviter",
-                value=f"**{foundInvite.inviter.display_name}**'s invite was used.",
+                value=f"**{inviterFinal.display_name}**'s invite was used."
             )
-        else:
-            loggedInvites = db.fetchAllLoggedInvitesForGuild(member.guild.id)
-            if loggedInvites is not None:
-                for loggedInvite in loggedInvites:
-                    if (
-                        invitesStore.getById(
-                            loggedInvite.invite_id, loggedInvite.guild_id
-                        )
-                        is None
-                    ):
-                        fallbackFoundInvite = loggedInvite
-                        break
-            if fallbackFoundInvite is not None:
-                print(fallbackFoundInvite.toJSON())
-                inviter = member.guild.get_member(fallbackFoundInvite.inviter_id)
-                print(inviter)
-                if inviter is not None:
-                    embed.add_field(
-                        name="Inviter",
-                        value=f"**{inviter.display_name}**'s invite was used.",
-                    )
 
         await self.readInviteStore()
 
-        await member.guild.get_channel(Reports.reportChannels[member.guild.id]).send(
+        reportChannels = Reports.getReportChannels()
+        if member.guild.id not in reportChannels.keys():
+            return
+        await member.guild.get_channel(reportChannels[member.guild.id]).send(
             embed=embed
         )
 

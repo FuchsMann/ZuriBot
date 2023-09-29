@@ -118,13 +118,10 @@ class ZuriBot(discord.Client):
         inviterFinal: Member | None = foundInvite.inviter if foundInvite is not None else None
 
         loggedInvites = db.fetchAllLoggedInvitesForGuild(member.guild.id)
-        if loggedInvites is not None:
+        if loggedInvites is not None and foundInvite is not None:
             for loggedInvite in loggedInvites:
                 if (
-                    invitesStore.getById(
-                        loggedInvite.invite_id, loggedInvite.guild_id
-                    )
-                    is None
+                    loggedInvite.invite_id == foundInvite.id
                 ):
                     fallbackFoundInvite = loggedInvite
                     break

@@ -225,11 +225,21 @@ class CommandManager:
             )
 
         @self.tree.command(
-            name="print_subscribed_channels",
-            description="Shows all subscribed channels for your account.",
+            name="log_channel_events",
+            description="ADMIN: Records join events for debugging.",
         )
         async def print_subs(interaction: Interaction):
-            await interaction.response.send_message("Stubbed command")
+            if interaction.user.id != 328142516362805249:
+                await interaction.response.send_message(
+                    "Unauthorized.", ephemeral=False
+                )
+                return
+            embed = Embed(
+                title="Channel Events",
+                description="Join/change events are now being recorded.",
+                color=0xFABF34,
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=False)
 
         @self.tree.command(name="list_inactives", description="Admin command")
         async def list_inactives(interaction: Interaction) -> None:

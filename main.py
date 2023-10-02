@@ -47,7 +47,7 @@ class ZuriBot(discord.Client):
             # type: ignore
             return channelID in [channel.channel_id for channel in watchedChannels]
 
-        if before.channel is None and after.channel is not None:
+        if (before.channel is None and after.channel is not None) or before.channel is not None and after.channel is not None and before.channel.id != after.channel.id:
             if channelIsWatched(after.channel.id):
                 customMessage = db.fetchCustomMessage(
                     member.id, member.guild.id)

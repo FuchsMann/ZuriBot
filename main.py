@@ -146,6 +146,22 @@ class ZuriBot(discord.Client):
             embed=embed
         )
 
+    # user leave event
+    async def on_member_remove(self, member: Member):
+        embed = Embed(
+            title="Member Left",
+            description=f"Member **{member.name}** left the server.",
+            color=0xFF0000,
+        )
+        embed.set_footer(text="ZuriBot")
+
+        reportChannels = Reports.getReportChannels()
+        if member.guild.id not in reportChannels.keys():
+            return
+        await member.guild.get_channel(reportChannels[member.guild.id]).send(
+            embed=embed
+        )
+
 
 client = ZuriBot()
 client.run()

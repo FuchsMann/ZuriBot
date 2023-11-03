@@ -10,6 +10,7 @@ class ResponseType(Enum):
     PEPPERDREAM = 4
     TV = 5
     CASEYINVERT = 6
+    FNAF = 7
 
 
 class ImageView(View):
@@ -50,4 +51,9 @@ class ImageView(View):
     @button(label='Casey Invert', style=discord.ButtonStyle.blurple, row=3)
     async def caseyInvert(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.responseType = ResponseType.CASEYINVERT
+        self.closeView()
+
+    @button(label='FNAF', style=discord.ButtonStyle.blurple, row=3)
+    async def fnaf(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.responseType = ResponseType.FNAF
         self.closeView()

@@ -85,7 +85,8 @@ class CommandManager:
                 except Exception as e:
                     pass
                 await interaction.response.send_message(embed=embed, ephemeral=True)
-                db.insertIntoInviteTimer(interaction.user.id, datetime.now(pytz.utc))
+                db.insertIntoInviteTimer(
+                    interaction.user.id, datetime.now(pytz.utc))
             else:
                 nextInvite = it.timeToNextInvite()
                 responseStr = f"You can create a new Invite in {nextInvite[0]} days, {nextInvite[1]} hours and {nextInvite[2]} minutes"
@@ -377,7 +378,8 @@ class CommandManager:
                     color=0xFABF34,
                 )
                 embed.add_field(name="Version", value=ms.version or "Unknown")
-                embed.add_field(name="Latency", value=f"{round(ms.latency or 0)} ms")
+                embed.add_field(
+                    name="Latency", value=f"{round(ms.latency or 0)} ms")
                 playersList = ms.player_list or []
                 if playersList:
                     players = ""
@@ -386,7 +388,8 @@ class CommandManager:
                             players += f"Daukus\n"
                         else:
                             players += f"{player}\n"
-                    embed.add_field(name="Players", value=players, inline=False)
+                    embed.add_field(
+                        name="Players", value=players, inline=False)
                 message = await interaction.original_response()
                 await message.edit(embed=embed)
             except:
@@ -494,6 +497,8 @@ class CommandManager:
                         await processImages(
                             ImageFunctions.rotateHue, interaction, message
                         )
+                    case ResponseType.FNAF:
+                        await processImages(ImageFunctions.fnaf, interaction, message)
                 await interaction.delete_original_response()
                 return
             await interaction.response.send_message("No images detected")

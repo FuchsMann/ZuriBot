@@ -427,6 +427,11 @@ class CommandManager:
         @self.tree.command(name="channelstatus", description="shows p-Ints for channels")
         async def channelstatus(interaction: Interaction):
             try:
+                if interaction.user.id != 328142516362805249:
+                    await interaction.response.send_message(
+                        "Unauthorized.", ephemeral=False
+                    )
+                    return
                 embed = Embed(title="Channel Status List", color=0xFABF34)
                 statusList = ''
                 for channel in interaction.guild.channels:

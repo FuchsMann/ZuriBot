@@ -24,6 +24,7 @@ import minestat
 import psutil
 from ui.image_view import ImageView, ResponseType
 from reports import Reports
+import random
 
 
 class CommandManager:
@@ -419,6 +420,19 @@ class CommandManager:
                     value=f"{mem.percent}%\nused: {round(mem.used / 1024 / 1024 / 1024, 2)}GB\nfree: {round(mem.free / 1024 / 1024 / 1024, 2)}GB\ntotal: {round(mem.total / 1024 / 1024 / 1024, 2)}GB",
                 )
                 embed.add_field(name="Disk", value=f"{disk.percent}%")
+                await interaction.response.send_message(embed=embed)
+            except:
+                await interaction.response.send_message("Something went wrong")
+
+        @self.tree.command(name="channelstatus", description="shows p-Ints for channels")
+        async def channelstatus(interaction: Interaction):
+            try:
+                embed = Embed(title="Channel Status List", color=0xFABF34)
+                statusList = ''
+                for channel in interaction.guild.channels:
+                    if isinstance(channel, TextChannel):
+                        statusList += f"{channel.name}: {channel.id} -> {random.randint(1000, 9999)}\n"
+                embed.add_field(name="List", value=statusList)
                 await interaction.response.send_message(embed=embed)
             except:
                 await interaction.response.send_message("Something went wrong")

@@ -2,6 +2,8 @@ from PIL import Image
 from discord import File
 from io import BytesIO
 from pathlib import Path
+from uuid import uuid4
+import moviepy.editor as mp
 import requests
 
 
@@ -149,29 +151,38 @@ class ImageFunctions:
         byteArr.seek(0)
         return File(byteArr, filename='fnaf.jpg')
 
-    # @staticmethod
-    # def animatedColorRotation(imageUrl: str) -> File:
-    #     inImage = Image.open(
-    #         BytesIO(requests.get(imageUrl).content)).convert('RGBA')
-    #     inImage.thumbnail((512, 512), Image.LANCZOS)
+    @staticmethod
+    def wtf(imageUrl: str) -> File:
+        inImage = Image.open(
+            BytesIO(requests.get(imageUrl).content))
+        sessionID = uuid4().hex
+        inImage.save(Path('image_manipulation',
+                     "media_out", f"{sessionID}.png"))
 
-    #     alpha = inImage.getchannel('A')
-    #     inImage = inImage.convert('HSV')
-    #     hue, saturation, value = inImage.split()
+        clip = mp.VideoFileClip(
+            Path('image_manipulation', 'media', "WTF_FINAL.mp4").as_posix())
+        background = mp.ImageClip(
+            Path('image_manipulation', "media_out", f"{sessionID}.png").as_posix())
 
-    #     images = []
-    #     for i in range(36):
-    #         hueOffsetDeg = i * 10
-    #         hueOffset = hueOffsetDeg / 360 * 256
-    #         hue = hue.point(lambda i: (i + hueOffset) % 256)
-    #         images.append(Image.merge('HSV', (hue, saturation, value)))
+        w, h = clip.size
+        background = background.resize(width=w, height=h)
 
-    #     for ima in images:
-    #         ima = ima.convert('RGBA')
-    #         ima.putalpha(alpha)
+        masked_clip = clip.fx(mp.vfx.mask_color, color=[
+                              0, 255, 8], thr=120, s=5)
 
-    #     byteArr = BytesIO()
-    #     images[0].save(byteArr, format='GIF', save_all=True,
-    #                    append_images=images[1:], duration=4, loop=0)
-    #     byteArr.seek(0)
-    #     return File(byteArr, filename='Rotated.gif')
+        final_clip = mp.CompositeVideoClip([
+            background.set_duration(clip.duration),
+            masked_clip.set_duration(clip.duration)
+        ])
+
+        final_clip.write_videofile(Path(
+            'image_manipulation', 'media_out', f"{sessionID}.mp4").as_posix(), codec='libx264', audio_codec='aac')
+        final_clip.close()
+
+        byteArr = BytesIO()
+        with open(Path('image_manipulation', 'media_out', f"{sessionID}.mp4").as_posix(), 'rb') as f:
+            byteArr.write(f.read())
+        byteArr.seek(0)
+        Path('image_manipulation', 'media_out', f"{sessionID}.mp4").unlink()
+        Path('image_manipulation', 'media_out', f"{sessionID}.png").unlink()
+        return File(byteArr, filename='wtf.mp4')

@@ -11,6 +11,7 @@ class ResponseType(Enum):
     TV = 5
     CASEYINVERT = 6
     FNAF = 7
+    WTF = 8
 
 
 class ImageView(View):
@@ -56,4 +57,9 @@ class ImageView(View):
     @button(label='FNAF', style=discord.ButtonStyle.blurple, row=3)
     async def fnaf(self, button: discord.ui.Button, interaction: discord.Interaction):
         self.responseType = ResponseType.FNAF
+        self.closeView()
+
+    @button(label='WTF', style=discord.ButtonStyle.blurple, row=4)
+    async def wtf(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.responseType = ResponseType.WTF
         self.closeView()

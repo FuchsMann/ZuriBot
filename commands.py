@@ -422,9 +422,9 @@ class CommandManager:
             imageFunction: callable,
             interaction: Interaction,
             message: Message,
+            urls: list[str],
             ephemeral: bool = False,
         ):
-            urls = get_image_urls(message)
             if len(urls) != 0:
                 for url in urls:
                     outfile = imageFunction(url)
@@ -458,27 +458,31 @@ class CommandManager:
                 await iView.wait()
                 match (iView.responseType):
                     case ResponseType.SOY:
-                        await processImages(ImageFunctions.soy, interaction, message)
+                        await processImages(ImageFunctions.soy, interaction, message, urls)
                     case ResponseType.SOYPHONE:
                         await processImages(
-                            ImageFunctions.soyphone, interaction, message
+                            ImageFunctions.soyphone, interaction, message, urls
                         )
                     case ResponseType.JAVAKICK:
                         await processImages(
-                            ImageFunctions.javaKick, interaction, message
+                            ImageFunctions.javaKick, interaction, message, urls
                         )
                     case ResponseType.PEPPERDREAM:
                         await processImages(
-                            ImageFunctions.pepperdream, interaction, message
+                            ImageFunctions.pepperdream, interaction, message, urls
                         )
                     case ResponseType.TV:
-                        await processImages(ImageFunctions.tv, interaction, message)
+                        await processImages(ImageFunctions.tv, interaction, message, urls)
                     case ResponseType.CASEYINVERT:
                         await processImages(
-                            ImageFunctions.rotateHue, interaction, message
+                            ImageFunctions.rotateHue, interaction, message, urls
                         )
                     case ResponseType.FNAF:
-                        await processImages(ImageFunctions.fnaf, interaction, message)
+                        await processImages(ImageFunctions.fnaf, interaction, message, urls)
+                    case ResponseType.WTF:
+                        # trim array down to 1 image due to computational expense
+                        urls = urls[0:1]
+                        await processImages(ImageFunctions.wtf, interaction, message, urls)
                 await interaction.delete_original_response()
                 return
             await interaction.response.send_message("No images detected")

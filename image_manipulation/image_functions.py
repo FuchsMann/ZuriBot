@@ -153,18 +153,20 @@ class ImageFunctions:
 
     @staticmethod
     def wtf(imageUrl: str) -> File:
-        inImage = Image.open(
-            BytesIO(requests.get(imageUrl).content))
         sessionID = uuid4().hex
-        inImage.save(Path('image_manipulation',
-                     "media_out", f"{sessionID}.png"))
 
         clip = mp.VideoFileClip(
             Path('image_manipulation', 'media', "WTF_FINAL.mp4").as_posix())
+        w, h = clip.size
+
+        inImage = Image.open(
+            BytesIO(requests.get(imageUrl).content)).resize((w, h), Image.LANCZOS)
+        inImage.save(Path('image_manipulation',
+                     "media_out", f"{sessionID}.png"))
+
         background = mp.ImageClip(
             Path('image_manipulation', "media_out", f"{sessionID}.png").as_posix())
 
-        w, h = clip.size
         background = background.resize(width=w, height=h)
 
         masked_clip = clip.fx(mp.vfx.mask_color, color=[
@@ -178,6 +180,11 @@ class ImageFunctions:
         final_clip.write_videofile(Path(
             'image_manipulation', 'media_out', f"{sessionID}.mp4").as_posix(), codec='libx264', audio_codec='aac')
         final_clip.close()
+
+        del clip
+        del background
+        del masked_clip
+        del final_clip
 
         byteArr = BytesIO()
         with open(Path('image_manipulation', 'media_out', f"{sessionID}.mp4").as_posix(), 'rb') as f:

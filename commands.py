@@ -26,6 +26,8 @@ from ui.image_view import ImageView, ResponseType
 from reports import Reports
 import random
 
+idiotList = [415384156130902016]
+
 
 class CommandManager:
     def __init__(self, client: Client):
@@ -449,6 +451,11 @@ class CommandManager:
 
         @self.tree.context_menu(name="Image functions")
         async def image_functions(interaction: Interaction, message: Message):
+            if interaction.user.id in idiotList:
+                await interaction.response.send_message(
+                    "You are not allowed to use this command", ephemeral=False
+                )
+                return
             urls = get_image_urls(message)
             if len(urls) != 0:
                 iView: ImageView = ImageView()

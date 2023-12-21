@@ -49,6 +49,31 @@ class CommandManager:
                         embed=HelpEmbeds.basicHelp(), ephemeral=True
                     )
 
+        @self.tree.command(name='rng', description='Random number generator')
+        async def rng(interaction: Interaction, min: int, max: int, count: Optional[int] = 1, seed: Optional[int] = None):
+            if min > max:
+                await interaction.response.send_message(
+                    "Min cannot be greater than max", ephemeral=True
+                )
+                return
+            if count > 100:
+                await interaction.response.send_message(
+                    "Cannot generate more than 100 numbers", ephemeral=True
+                )
+                return
+            if count < 1:
+                await interaction.response.send_message(
+                    "Cannot generate less than 1 number", ephemeral=True
+                )
+                return
+            if seed is None:
+                seed = random.randint(0, 1000000)
+            random.seed(seed)
+            numbers = [random.randint(min, max) for _ in range(count)]
+            await interaction.response.send_message(
+                f"Random numbers between {min} and {max}:\n{numbers}", ephemeral=False
+            )
+
         @self.tree.command(
             name="create_invite", description="Creates a single use invite"
         )

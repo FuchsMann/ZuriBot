@@ -71,7 +71,29 @@ class CommandManager:
             random.seed(seed)
             numbers = [random.randint(min, max) for _ in range(count)]
             await interaction.response.send_message(
-                f"Random numbers between {min} and {max}:\n{numbers}", ephemeral=False
+                f"{count} Random numbers between {min} and {max}:\n{numbers}", ephemeral=False
+            )
+
+        @self.tree.command(name='dice', description='Dice roller')
+        async def dice(interaction: Interaction, sides: int, rolls: Optional[int] = 1):
+            if rolls > 100:
+                await interaction.response.send_message(
+                    "Cannot roll more than 100 times", ephemeral=True
+                )
+                return
+            if rolls < 1:
+                await interaction.response.send_message(
+                    "Cannot roll less than 1 time", ephemeral=True
+                )
+                return
+            if sides < 2:
+                await interaction.response.send_message(
+                    "Cannot have a dice with less than 2 side", ephemeral=True
+                )
+                return
+            numbers = [random.randint(1, sides) for _ in range(rolls)]
+            await interaction.response.send_message(
+                f"Rolling {rolls}d{sides}:\n{numbers}", ephemeral=False
             )
 
         @self.tree.command(

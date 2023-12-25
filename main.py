@@ -34,6 +34,12 @@ class ZuriBot(discord.Client):
 
         await self.readInviteStore()
 
+        # print current guilds
+
+        print("Current guilds:")
+        for guild in self.guilds:
+            print(f'    - {guild.name}: {guild.id}')
+
     async def on_voice_state_update(
         self, member: Member, before: VoiceState, after: VoiceState
     ) -> None:

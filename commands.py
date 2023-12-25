@@ -21,7 +21,6 @@ from embeds.help import HelpEmbeds
 from typing import Optional
 from auth import Auth
 import minestat
-import psutil
 from ui.image_view import ImageView, ResponseType
 from reports import Reports
 import random
@@ -88,7 +87,7 @@ class CommandManager:
                 return
             if sides < 2:
                 await interaction.response.send_message(
-                    "Cannot have a dice with less than 2 side", ephemeral=True
+                    "Cannot have a dice with less than 2 sides", ephemeral=True
                 )
                 return
             numbers = [random.randint(1, sides) for _ in range(rolls)]
@@ -262,35 +261,6 @@ class CommandManager:
             file = File(fp=outBytes, filename="channels.json")
             await interaction.response.send_message(file=file, ephemeral=True)
 
-        @self.tree.command(
-            name="subscribe",
-            description="Adds/removes a channel from your notifications, optional argument for specific artists",
-        )
-        async def subscribe(
-            interaction: Interaction,
-            voice_channel: VoiceChannel,
-            artist: Optional[Member] = None,
-        ):
-            await interaction.response.send_message(
-                f"Stubbed command; arg feedback: {voice_channel}, {artist}"
-            )
-
-        @self.tree.command(
-            name="log_channel_events",
-            description="ADMIN: Records join events for debugging.",
-        )
-        async def print_subs(interaction: Interaction):
-            if interaction.user.id != 328142516362805249:
-                await interaction.response.send_message(
-                    "Unauthorized.", ephemeral=False
-                )
-                return
-            embed = Embed(
-                title="Channel Events",
-                description="Join/change events are now being recorded.",
-                color=0xFABF34,
-            )
-            await interaction.response.send_message(embed=embed, ephemeral=False)
 
         @self.tree.command(name="list_inactives", description="Admin command")
         async def list_inactives(interaction: Interaction) -> None:

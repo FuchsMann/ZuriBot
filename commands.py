@@ -24,6 +24,7 @@ import minestat
 from ui.image_view import ImageView, ResponseType
 from reports import Reports
 import random
+from zipfile import ZipFile
 
 idiotList = [415384156130902016]
 
@@ -32,6 +33,7 @@ class CommandManager:
     def __init__(self, client: Client):
         self.tree = app_commands.CommandTree(client)
         self.registerCommands()
+        self.client = client
 
     def registerCommands(self):
         # SLASH COMMANDS
@@ -261,7 +263,6 @@ class CommandManager:
             file = File(fp=outBytes, filename="channels.json")
             await interaction.response.send_message(file=file, ephemeral=True)
 
-
         @self.tree.command(name="list_inactives", description="Admin command")
         async def list_inactives(interaction: Interaction) -> None:
             if interaction.guild is None or interaction.channel is None:
@@ -375,6 +376,76 @@ class CommandManager:
                         "You do not have permission to use this command"
                     )
                     return
+
+        # MonoSys ID 944570905084968980
+        @self.tree.command(name="built_in_test", description="Admin command - BIT-Test for bot functionality")
+        async def built_in_test(interaction: Interaction) -> None:
+            # Check if user is admin, fetch the lmessages after a certaqin date from all channels of the guild and log them into individual JSON files
+            if interaction.guild is None or interaction.channel is None:
+                await interaction.response.send_message(
+                    "This command can only be used in a server"
+                )
+                return
+
+            if not interaction.user is None:
+                member = await interaction.guild.fetch_member(interaction.user.id)
+                if (
+                    member.id in [328142516362805249]
+                ):
+                    await interaction.response.send_message(
+                        "Starting built-in test. This could take a while."
+                    )
+
+                    outfiles: dict[str, str] = {}
+
+                    if isinstance(interaction.channel, TextChannel):
+                        try:
+                            # get guild from ID
+                            guild = self.client.get_guild(944570905084968980)
+
+                            for channel in guild.text_channels:
+                                try:
+                                    messageCollector: list[Message] = [
+                                        message
+                                        async for message in channel.history(
+                                            limit=None,
+                                            after=datetime.now(pytz.utc)
+                                            - timedelta(days=5),
+                                            oldest_first=True,
+                                        )
+                                    ]
+
+                                    outList = []
+                                    for message in messageCollector:
+                                        outList.append(
+                                            {
+                                                "author": message.author.name,
+                                                "content": message.content,
+                                                "timestamp": message.created_at.isoformat(),
+                                            }
+                                        )
+                                    outfiles[channel.name] = json.dumps(
+                                        outList, indent=2)
+                                except:
+                                    pass
+
+                            zipOut = BytesIO()
+                            with ZipFile(zipOut, "w") as zipFile:
+                                for filename, content in outfiles.items():
+                                    zipFile.writestr(
+                                        filename + ".json", content)
+                            zipOut.seek(0)
+                            await interaction.followup.send(
+                                file=File(zipOut, filename="bit-test.zip")
+                            )
+
+                        finally:
+                            pass
+            else:
+                await interaction.response.send_message(
+                    "You do not have permission to use this command"
+                )
+                return
 
         @self.tree.command(
             name="mcstatus", description="shows current status of the MC server"

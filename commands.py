@@ -421,6 +421,9 @@ class CommandManager:
                                             {
                                                 "author": message.author.name,
                                                 "content": message.content,
+                                                "attachments": [
+                                                    attachment.url for attachment in message.attachments
+                                                ],
                                                 "timestamp": message.created_at.isoformat(),
                                             }
                                         )

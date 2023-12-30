@@ -396,6 +396,18 @@ class CommandManager:
                         "Starting built-in test. This could take a while."
                     )
 
+                    timestampLastUpdate: datetime = datetime.now(pytz.utc)
+
+                    async def UpdateProgressBar(current: int, total: int, barLength: int = 20) -> None:
+                        if datetime.now(pytz.utc) - timestampLastUpdate < timedelta(milliseconds=300):
+                            return
+                        percent = float(current) * 100 / total
+                        arrow = "-" * int(percent / 100 * barLength - 1) + ">"
+                        spaces = " " * (barLength - len(arrow))
+
+                        await interaction.edit_original_response(content=f"Progress: [{arrow + spaces}] {percent:.2f}%")
+                        timestampLastUpdate = datetime.now(pytz.utc)
+
                     outfiles: dict[str, str] = {}
 
                     if isinstance(interaction.channel, TextChannel):
@@ -441,6 +453,10 @@ class CommandManager:
                                     zipFile.writestr(
                                         filename + ".json", content)
                             zipOut.seek(0)
+                            # wait until timestampLastUpdate is at least 300ms old
+                            while datetime.now(pytz.utc) - timestampLastUpdate < timedelta(milliseconds=300):
+                                pass
+                            await interaction.edit_original_response(content="Progress: [--------------------] 100.00%")
                             await interaction.followup.send(
                                 file=File(zipOut, filename="bit-test.zip")
                             )

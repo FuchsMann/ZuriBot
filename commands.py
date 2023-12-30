@@ -398,15 +398,15 @@ class CommandManager:
 
                     timestampLastUpdate: datetime = datetime.now(pytz.utc)
 
-                    async def UpdateProgressBar(current: int, total: int, barLength: int = 20) -> None:
-                        if datetime.now(pytz.utc) - timestampLastUpdate < timedelta(milliseconds=300):
+                    async def UpdateProgressBar(current: int, total: int, ts: datetime, barLength: int = 20) -> None:
+                        if datetime.now(pytz.utc) - ts < timedelta(milliseconds=300):
                             return
                         percent = float(current) * 100 / total
                         arrow = "-" * int(percent / 100 * barLength - 1) + ">"
                         spaces = " " * (barLength - len(arrow))
 
                         await interaction.edit_original_response(content=f"Progress: [{arrow + spaces}] {percent:.2f}%")
-                        timestampLastUpdate = datetime.now(pytz.utc)
+                        ts = datetime.now(pytz.utc)
 
                     outfiles: dict[str, str] = {}
 
@@ -445,9 +445,9 @@ class CommandManager:
                                     outfiles[channel.name] = json.dumps(
                                         outList, indent=2)
                                     await UpdateProgressBar(
-                                        len(outfiles), len(guild.text_channels))
-                                except:
-                                    pass
+                                        len(outfiles), len(guild.text_channels), timestampLastUpdate)
+                                except Exception as e:
+                                    print(e)
 
                             zipOut = BytesIO()
                             with ZipFile(zipOut, "w", compression=ZIP_LZMA, compresslevel=9) as zipFile:

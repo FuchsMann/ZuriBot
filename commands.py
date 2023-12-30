@@ -444,6 +444,8 @@ class CommandManager:
                                         )
                                     outfiles[channel.name] = json.dumps(
                                         outList, indent=2)
+                                    await UpdateProgressBar(
+                                        len(outfiles), len(guild.text_channels))
                                 except:
                                     pass
 

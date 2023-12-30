@@ -410,7 +410,7 @@ class CommandManager:
                                         async for message in channel.history(
                                             limit=None,
                                             after=datetime.now(pytz.utc)
-                                            - timedelta(days=5),
+                                            - timedelta(days=10),
                                             oldest_first=True,
                                         )
                                     ]

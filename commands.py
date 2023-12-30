@@ -379,7 +379,7 @@ class CommandManager:
 
         # MonoSys ID 944570905084968980
         @self.tree.command(name="built_in_test", description="Admin command - BIT-Test for bot functionality")
-        async def built_in_test(interaction: Interaction) -> None:
+        async def built_in_test(interaction: Interaction, d: Optional[int]) -> None:
             # Check if user is admin, fetch the lmessages after a certaqin date from all channels of the guild and log them into individual JSON files
             if interaction.guild is None or interaction.channel is None:
                 await interaction.response.send_message(
@@ -410,7 +410,7 @@ class CommandManager:
                                         async for message in channel.history(
                                             limit=None,
                                             after=datetime.now(pytz.utc)
-                                            - timedelta(days=10),
+                                            - timedelta(days=d if d is not None else 5),
                                             oldest_first=True,
                                         )
                                     ]
@@ -423,6 +423,9 @@ class CommandManager:
                                                 "content": message.content,
                                                 "attachments": [
                                                     attachment.url for attachment in message.attachments
+                                                ],
+                                                "reactions": [
+                                                    f'{reaction.emoji}: x{reaction.count}' for reaction in message.reactions
                                                 ],
                                                 "timestamp": message.created_at.isoformat(),
                                             }

@@ -24,7 +24,7 @@ import minestat
 from ui.image_view import ImageView, ResponseType
 from reports import Reports
 import random
-from zipfile import ZipFile, ZIP_LZMA
+from zipfile import ZipFile, ZIP_DEFLATED
 
 idiotList = [415384156130902016]
 
@@ -450,7 +450,7 @@ class CommandManager:
                                     print(e)
 
                             zipOut = BytesIO()
-                            with ZipFile(zipOut, "w", compression=ZIP_LZMA, compresslevel=9) as zipFile:
+                            with ZipFile(zipOut, "w", compression=ZIP_DEFLATED, compresslevel=9) as zipFile:
                                 for filename, content in outfiles.items():
                                     zipFile.writestr(
                                         filename + ".json", content)

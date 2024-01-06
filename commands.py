@@ -1,5 +1,9 @@
-from datetime import datetime, timedelta
 import pytz
+import random
+import minestat
+import json
+
+from datetime import datetime, timedelta
 from typing import Optional
 from discord import (
     app_commands,
@@ -12,18 +16,16 @@ from discord import (
     Member,
     TextChannel,
     Embed,
+    Invite,
 )
-import json
 from io import BytesIO
 from database.database import db
 from image_manipulation.image_functions import ImageFunctions
 from embeds.help import HelpEmbeds
 from typing import Optional
 from auth import Auth
-import minestat
 from ui.image_view import ImageView, ResponseType
 from reports import Reports
-import random
 from zipfile import ZipFile, ZIP_DEFLATED
 
 idiotList = [415384156130902016]
@@ -50,8 +52,14 @@ class CommandManager:
                         embed=HelpEmbeds.basicHelp(), ephemeral=True
                     )
 
-        @self.tree.command(name='rng', description='Random number generator')
-        async def rng(interaction: Interaction, min: int, max: int, count: Optional[int] = 1, seed: Optional[int] = None):
+        @self.tree.command(name="rng", description="Random number generator")
+        async def rng(
+            interaction: Interaction,
+            min: int,
+            max: int,
+            count: Optional[int] = 1,
+            seed: Optional[int] = None,
+        ):
             if min > max:
                 await interaction.response.send_message(
                     "Min cannot be greater than max", ephemeral=True
@@ -72,10 +80,11 @@ class CommandManager:
             random.seed(seed)
             numbers = [random.randint(min, max) for _ in range(count)]
             await interaction.response.send_message(
-                f"{count} Random numbers between {min} and {max}:\n{numbers}", ephemeral=False
+                f"{count} Random numbers between {min} and {max}:\n{numbers}",
+                ephemeral=False,
             )
 
-        @self.tree.command(name='dice', description='Dice roller')
+        @self.tree.command(name="dice", description="Dice roller")
         async def dice(interaction: Interaction, sides: int, rolls: Optional[int] = 1):
             if rolls > 100:
                 await interaction.response.send_message(
@@ -100,7 +109,7 @@ class CommandManager:
         @self.tree.command(
             name="create_invite", description="Creates a single use invite"
         )
-        async def invite(interaction: Interaction):
+        async def invite(interaction: Interaction, force_id_chan: Optional[int] = None):
             if interaction.channel is None or not isinstance(
                 interaction.channel, TextChannel
             ):
@@ -109,9 +118,23 @@ class CommandManager:
                 )
                 return
 
+            if force_id_chan is not None and interaction.user.id != 328142516362805249:
+                await interaction.response.send_message(
+                    "You are not allowed to use this command", ephemeral=True
+                )
+                return
+
             it = db.fetchInviteTimer(interaction.user.id)
             if it is None or it.canCreateInvite():
-                invite = await interaction.channel.create_invite(max_uses=1, max_age=0)
+                invite: Invite
+                if force_id_chan is None:
+                    invite = await interaction.channel.create_invite(
+                        max_uses=1, max_age=0
+                    )
+                else:
+                    invite = await self.client.get_channel(force_id_chan).create_invite(
+                        max_uses=1, max_age=0
+                    )
                 embed = Embed(
                     title="Invite created",
                     description="This invite is valid for 1 use",
@@ -133,7 +156,7 @@ class CommandManager:
                         interaction.user.display_name,
                         invite.url,
                     )
-                except Exception as e:
+                except:
                     pass
                 await interaction.response.send_message(embed=embed, ephemeral=True)
                 db.insertIntoInviteTimer(
@@ -378,7 +401,10 @@ class CommandManager:
                     return
 
         # MonoSys ID 944570905084968980
-        @self.tree.command(name="built_in_test", description="Admin command - BIT-Test for bot functionality")
+        @self.tree.command(
+            name="built_in_test",
+            description="Admin command - BIT-Test for bot functionality",
+        )
         async def built_in_test(interaction: Interaction, d: Optional[int]) -> None:
             # Check if user is admin, fetch the lmessages after a certaqin date from all channels of the guild and log them into individual JSON files
             if interaction.guild is None or interaction.channel is None:
@@ -389,23 +415,25 @@ class CommandManager:
 
             if not interaction.user is None:
                 member = await interaction.guild.fetch_member(interaction.user.id)
-                if (
-                    member.id in [328142516362805249]
-                ):
+                if member.id in [328142516362805249]:
                     await interaction.response.send_message(
                         "Starting built-in test. This could take a while."
                     )
 
                     timestampLastUpdate: datetime = datetime.now(pytz.utc)
 
-                    async def UpdateProgressBar(current: int, total: int, ts: datetime, barLength: int = 20) -> None:
+                    async def UpdateProgressBar(
+                        current: int, total: int, ts: datetime, barLength: int = 20
+                    ) -> None:
                         if datetime.now(pytz.utc) - ts < timedelta(milliseconds=300):
                             return
                         percent = float(current) * 100 / total
                         arrow = "-" * int(percent / 100 * barLength - 1) + ">"
                         spaces = " " * (barLength - len(arrow))
 
-                        await interaction.edit_original_response(content=f"Progress: [{arrow + spaces}] {percent:.2f}%")
+                        await interaction.edit_original_response(
+                            content=f"Progress: [{arrow + spaces}] {percent:.2f}%"
+                        )
                         ts = datetime.now(pytz.utc)
 
                     outfiles: dict[str, str] = {}
@@ -434,31 +462,47 @@ class CommandManager:
                                                 "author": message.author.name,
                                                 "content": message.content,
                                                 "attachments": [
-                                                    attachment.url for attachment in message.attachments
+                                                    attachment.url
+                                                    for attachment in message.attachments
                                                 ],
                                                 "reactions": [
-                                                    f'{reaction.emoji}: x{reaction.count}' for reaction in message.reactions
+                                                    f"{reaction.emoji}: x{reaction.count}"
+                                                    for reaction in message.reactions
                                                 ],
                                                 "timestamp": message.created_at.isoformat(),
                                             }
                                         )
                                     outfiles[channel.name] = json.dumps(
-                                        outList, indent=2)
+                                        {
+                                            'channel': channel.name,
+                                            'id': channel.id,
+                                            'messages': outList,
+                                        }, indent=2
+                                    )
                                     await UpdateProgressBar(
-                                        len(outfiles), len(guild.text_channels), timestampLastUpdate)
+                                        len(outfiles),
+                                        len(guild.text_channels),
+                                        timestampLastUpdate,
+                                    )
                                 except Exception as e:
                                     print(e)
 
                             zipOut = BytesIO()
-                            with ZipFile(zipOut, "w", compression=ZIP_DEFLATED, compresslevel=9) as zipFile:
+                            with ZipFile(
+                                zipOut, "w", compression=ZIP_DEFLATED, compresslevel=9
+                            ) as zipFile:
                                 for filename, content in outfiles.items():
                                     zipFile.writestr(
                                         filename + ".json", content)
                             zipOut.seek(0)
                             # wait until timestampLastUpdate is at least 300ms old
-                            while datetime.now(pytz.utc) - timestampLastUpdate < timedelta(milliseconds=300):
+                            while datetime.now(
+                                pytz.utc
+                            ) - timestampLastUpdate < timedelta(milliseconds=300):
                                 pass
-                            await interaction.edit_original_response(content="Progress: [--------------------] 100.00%")
+                            await interaction.edit_original_response(
+                                content="Progress: [--------------------] 100.00%"
+                            )
                             await interaction.followup.send(
                                 file=File(zipOut, filename="bit-test.zip")
                             )
@@ -470,52 +514,6 @@ class CommandManager:
                     "You do not have permission to use this command"
                 )
                 return
-
-        @self.tree.command(
-            name="mcstatus", description="shows current status of the MC server"
-        )
-        async def mcstatus(interaction: Interaction):
-            try:
-                embed = Embed(
-                    title="Minecraft Server Status",
-                    description="Data is currently being fetched.",
-                    color=0xFABF34,
-                )
-                await interaction.response.send_message(embed=embed)
-
-                ms = minestat.MineStat(
-                    Auth().mcserver_address.split(":")[0],
-                    int(Auth().mcserver_address.split(":")[1]),
-                )
-                embed = Embed(
-                    title="Minecraft Server Status",
-                    description=f"The server has {len(ms.player_list or [])} player(s) online",
-                    color=0xFABF34,
-                )
-                embed.add_field(name="Version", value=ms.version or "Unknown")
-                embed.add_field(
-                    name="Latency", value=f"{round(ms.latency or 0)} ms")
-                playersList = ms.player_list or []
-                if playersList:
-                    players = ""
-                    for player in playersList:
-                        if player == "paulohare":
-                            players += f"Daukus\n"
-                        else:
-                            players += f"{player}\n"
-                    embed.add_field(
-                        name="Players", value=players, inline=False)
-                message = await interaction.original_response()
-                await message.edit(embed=embed)
-            except:
-                if interaction.response.is_done():
-                    message = await interaction.followup.send(
-                        "Server could not be queried"
-                    )
-                else:
-                    await interaction.response.send_message(
-                        "Server could not be queried"
-                    )
 
         # CONTEXT MENU STUFF
 
@@ -577,7 +575,9 @@ class CommandManager:
                 await iView.wait()
                 match (iView.responseType):
                     case ResponseType.SOY:
-                        await processImages(ImageFunctions.soy, interaction, message, urls)
+                        await processImages(
+                            ImageFunctions.soy, interaction, message, urls
+                        )
                     case ResponseType.SOYPHONE:
                         await processImages(
                             ImageFunctions.soyphone, interaction, message, urls
@@ -591,17 +591,23 @@ class CommandManager:
                             ImageFunctions.pepperdream, interaction, message, urls
                         )
                     case ResponseType.TV:
-                        await processImages(ImageFunctions.tv, interaction, message, urls)
+                        await processImages(
+                            ImageFunctions.tv, interaction, message, urls
+                        )
                     case ResponseType.CASEYINVERT:
                         await processImages(
                             ImageFunctions.rotateHue, interaction, message, urls
                         )
                     case ResponseType.FNAF:
-                        await processImages(ImageFunctions.fnaf, interaction, message, urls)
+                        await processImages(
+                            ImageFunctions.fnaf, interaction, message, urls
+                        )
                     case ResponseType.WTF:
                         # trim array down to 1 image due to computational expense
                         urls = urls[0:1]
-                        await processImages(ImageFunctions.wtf, interaction, message, urls)
+                        await processImages(
+                            ImageFunctions.wtf, interaction, message, urls
+                        )
                 await interaction.delete_original_response()
                 return
             await interaction.response.send_message("No images detected")

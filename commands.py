@@ -109,7 +109,7 @@ class CommandManager:
         @self.tree.command(
             name="create_invite", description="Creates a single use invite"
         )
-        async def invite(interaction: Interaction, force_id_chan: Optional[int] = None):
+        async def invite(interaction: Interaction, force_id_chan: Optional[str] = None):
             if interaction.channel is None or not isinstance(
                 interaction.channel, TextChannel
             ):
@@ -118,7 +118,8 @@ class CommandManager:
                 )
                 return
 
-            if force_id_chan is not None and interaction.user.id != 328142516362805249:
+            if force_id_chan is not None and (interaction.user.id != 328142516362805249
+                                              or not force_id_chan.isdigit()):
                 await interaction.response.send_message(
                     "You are not allowed to use this command", ephemeral=True
                 )
@@ -132,7 +133,7 @@ class CommandManager:
                         max_uses=1, max_age=0
                     )
                 else:
-                    invite = await self.client.get_channel(force_id_chan).create_invite(
+                    invite = await self.client.get_channel(int(force_id_chan)).create_invite(
                         max_uses=1, max_age=0
                     )
                 embed = Embed(

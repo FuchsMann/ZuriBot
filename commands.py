@@ -24,25 +24,51 @@ from typing import Optional
 from ui.image_view import ImageView, ResponseType
 from reports import Reports
 from zipfile import ZipFile, ZIP_DEFLATED
+from documentation.documenter import Documenter
 
 idiotList = [415384156130902016]
 
 
 class CommandManager:
     def __init__(self, client: Client):
+        self.documenter = Documenter()
         self.tree = app_commands.CommandTree(client)
         self.registerCommands()
+        print(self.documenter.commands)
         self.client = client
 
     def registerCommands(self):
         # SLASH COMMANDS
 
         @self.tree.command(name="help", description="Shows a the help page")
-        async def help(interaction: Interaction, section: Optional[str] = None):
+        @self.documenter.add_docs
+        async def help(interaction: Interaction, section: Optional[str] = None, command: Optional[str] = None):
+            """Shows a the help page. Use the optional parameter to get help with specific commands"""
+            if command is not None:
+                if command in self.documenter.get_keys():
+                    embed = Embed(
+                        title=command, description=self.documenter.get_docs(
+                            command)
+                    )
+                    await interaction.response.send_message(
+                        embed=embed, ephemeral=True
+                    )
+                else:
+                    await interaction.response.send_message(
+                        "Command not found", ephemeral=True
+                    )
+                return
+
             match (section):
                 case "commands":
+                    embed = HelpEmbeds.slashHelp()
+                    embed.add_field(
+                        name="Commands",
+                        value="\n".join(self.documenter.get_keys()),
+                        inline=False,
+                    )
                     await interaction.response.send_message(
-                        embed=HelpEmbeds.slashHelp(), ephemeral=True
+                        embed=embed, ephemeral=True
                     )
                 case None:
                     await interaction.response.send_message(
@@ -64,6 +90,7 @@ class CommandManager:
             )
 
         @self.tree.command(name="rng", description="Random number generator")
+        @self.documenter.add_docs
         async def rng(
             interaction: Interaction,
             min: int,
@@ -71,6 +98,7 @@ class CommandManager:
             count: Optional[int] = 1,
             seed: Optional[int] = None,
         ):
+            """Generates random numbers between min and max. Use the optional count parameter to generate multiple numbers. Seed is optional but strengthens randomization"""
             if min > max:
                 await interaction.response.send_message(
                     "Min cannot be greater than max", ephemeral=True
@@ -96,7 +124,9 @@ class CommandManager:
             )
 
         @self.tree.command(name="dice", description="Dice roller")
+        @self.documenter.add_docs
         async def dice(interaction: Interaction, sides: int, rolls: Optional[int] = 1):
+            """Rolls a dice with the specified number of sides. Use the optional rolls parameter to roll multiple times"""
             if rolls > 100:
                 await interaction.response.send_message(
                     "Cannot roll more than 100 times", ephemeral=True
@@ -120,7 +150,9 @@ class CommandManager:
         @self.tree.command(
             name="create_invite", description="Creates a single use invite"
         )
-        async def invite(interaction: Interaction):
+        @self.documenter.add_docs
+        async def create_invite(interaction: Interaction):
+            """Creates a single use invite. You can create a new invite every 7 days."""
             if interaction.channel is None or not isinstance(
                 interaction.channel, TextChannel
             ):
@@ -170,7 +202,9 @@ class CommandManager:
             name="clear_invite_timer",
             description="Clears the invite timer for specified user. Admin command.",
         )
+        @self.documenter.add_docs
         async def clear_invite_timer(interaction: Interaction, member_mention: Member):
+            """Clears the invite timer for specified user. Admin command."""
             if not interaction.user.id in [
                 328142516362805249,
                 840836189417111571,
@@ -195,7 +229,9 @@ class CommandManager:
             name="print_messages",
             description="Shows all current custom messages for this guild",
         )
+        @self.documenter.add_docs
         async def print_messages(interaction: Interaction):
+            """Shows all current custom messages for this guild"""
             if interaction.guild_id is None:
                 await interaction.response.send_message(
                     "This command can only be used in a server", ephemeral=True
@@ -220,19 +256,22 @@ class CommandManager:
             name="join_message",
             description="A custom message for Zuri to say for a certain member",
         )
+        @self.documenter.add_docs
         async def join_message(
-            interaction: Interaction, user_mention: User, custom_message: str
+            interaction: Interaction, custom_message: str, user_mention: Optional[User] = None
         ):
+            """A custom message for Zuri to say for a certain member. Use the optional user_mention parameter to specify a user. If no user is specified, the message will be used for you."""
             if "@" in custom_message:
                 await interaction.response.send_message(
-                    f"Custom message cannot contain mentions"
+                    "Custom message cannot contain mentions"
                 )
                 return
+            user = user_mention if user_mention is not None else interaction.user
             db.insertIntoCustomMessage(
-                user_mention.id, interaction.guild_id, custom_message
+                user.id, interaction.guild_id, custom_message
             )  # type: ignore
             await interaction.response.send_message(
-                f'Message "{custom_message}" was added for {user_mention.name}',
+                f'Message "{custom_message}" was added for {user.name}',
                 ephemeral=True,
             )
 
@@ -240,19 +279,24 @@ class CommandManager:
             name="remove_message",
             description="Remove a users custom message from Zuri's memory",
         )
-        async def remove_message(interaction: Interaction, user_mention: User):
+        @self.documenter.add_docs
+        async def remove_message(interaction: Interaction, user_mention: Optional[User] = None):
+            """Remove a users custom message from Zuri's memory. Use the optional user_mention parameter to specify a user. If no user is specified, the message will be removed for you."""
+            user = user_mention if user_mention is not None else interaction.user
             db.removeCustomMessage(
-                user_mention.id, interaction.guild_id
+                user.id, interaction.guild_id
             )  # type: ignore
             await interaction.response.send_message(
-                f"Message for {user_mention.name} was removed", ephemeral=True
+                f"Message for {user.name} was removed", ephemeral=True
             )
 
         @self.tree.command(
             name="watch_channel",
             description="Adds/removes a channel from Zuri's watchlist",
         )
+        @self.documenter.add_docs
         async def watch_channel(interaction: Interaction, voice_channel: VoiceChannel):
+            """Adds/removes a channel from Zuri's watchlist"""
             action: str = db.toggleWatchedChannel(
                 interaction.guild_id, voice_channel.id, voice_channel.name
             )  # type: ignore
@@ -264,7 +308,9 @@ class CommandManager:
         @self.tree.command(
             name="print_channels", description="Show Zuri's channel watchlist"
         )
+        @self.documenter.add_docs
         async def print_channels(interaction: Interaction):
+            """Show Zuri's channel watchlist"""
             if interaction.guild_id is None:
                 await interaction.response.send_message(
                     "This command can only be used in a server", ephemeral=True

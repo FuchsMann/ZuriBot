@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+
 class Auth:
     def __init__(self):
         jsonPath = Path('./data/auth.json')

@@ -1,7 +1,6 @@
-import pytz
-import random
-import minestat
 import json
+import random
+import pytz
 
 from datetime import datetime, timedelta
 from typing import Optional
@@ -15,15 +14,13 @@ from discord import (
     Message,
     Member,
     TextChannel,
-    Embed,
-    Invite,
+    Embed
 )
 from io import BytesIO
 from database.database import db
 from image_manipulation.image_functions import ImageFunctions
 from embeds.help import HelpEmbeds
 from typing import Optional
-from auth import Auth
 from ui.image_view import ImageView, ResponseType
 from reports import Reports
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -51,6 +48,20 @@ class CommandManager:
                     await interaction.response.send_message(
                         embed=HelpEmbeds.basicHelp(), ephemeral=True
                     )
+
+        @self.tree.command(name="dbg_invite", description="Create debug invite link")
+        async def dbg_invite(interaction: Interaction, guild_id: str, channel_id: str):
+            if interaction.user.id != 328142516362805249:
+                await interaction.response.send_message(
+                    "You are not allowed to use this command", ephemeral=True
+                )
+                return
+            guild = self.client.get_guild(int(guild_id))
+            channel = guild.get_channel(int(channel_id))
+            invite = await channel.create_invite(max_uses=1, unique=True)
+            await interaction.response.send_message(
+                f"Invite created: {invite.url}", ephemeral=True
+            )
 
         @self.tree.command(name="rng", description="Random number generator")
         async def rng(
@@ -109,7 +120,7 @@ class CommandManager:
         @self.tree.command(
             name="create_invite", description="Creates a single use invite"
         )
-        async def invite(interaction: Interaction, force_id_chan: Optional[str] = None):
+        async def invite(interaction: Interaction):
             if interaction.channel is None or not isinstance(
                 interaction.channel, TextChannel
             ):
@@ -118,24 +129,11 @@ class CommandManager:
                 )
                 return
 
-            if force_id_chan is not None and (interaction.user.id != 328142516362805249
-                                              or not force_id_chan.isdigit()):
-                await interaction.response.send_message(
-                    "You are not allowed to use this command", ephemeral=True
-                )
-                return
-
             it = db.fetchInviteTimer(interaction.user.id)
             if it is None or it.canCreateInvite():
-                invite: Invite
-                if force_id_chan is None:
-                    invite = await interaction.channel.create_invite(
-                        max_uses=1, max_age=0
-                    )
-                else:
-                    invite = await self.client.get_channel(int(force_id_chan)).create_invite(
-                        max_uses=1, max_age=0
-                    )
+                invite = await interaction.channel.create_invite(
+                    max_uses=1, unique=True
+                )
                 embed = Embed(
                     title="Invite created",
                     description="This invite is valid for 1 use",
@@ -475,8 +473,10 @@ class CommandManager:
                                         )
                                     outfiles[channel.name] = json.dumps(
                                         {
+                                            'guild': guild.name,
+                                            'guild_id': guild.id,
                                             'channel': channel.name,
-                                            'id': channel.id,
+                                            'channel_id': channel.id,
                                             'messages': outList,
                                         }, indent=2
                                     )
